@@ -1,9 +1,11 @@
 {
+  "homepage": "https://bahaa-fahim.github.io/Employee-Management-System",
+
   "name": "employee-management",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://[YOUR_USERNAME].github.io/Employee-Management",
+  
   "scripts": {
     "dev": "vite",
     "build": "vite build",
