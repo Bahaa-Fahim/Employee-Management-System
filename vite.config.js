@@ -5,7 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),
       tailwindcss()],
-  base: '/Employee-Management/',
+ base: '/Employee-Management-System/',
+
+ 
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
