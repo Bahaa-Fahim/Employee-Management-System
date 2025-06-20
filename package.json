@@ -1,11 +1,9 @@
 {
   "homepage": "https://bahaa-fahim.github.io/Employee-Management-System",
-
   "name": "employee-management",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -18,6 +16,7 @@
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
+    "prop-types": "^15.8.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.58.1",

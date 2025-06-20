@@ -1,342 +1,251 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import './Profile.css';
 
 const Profile = () => {
   const { user } = useAuth();
-  const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('about'); // 'about' or 'skills'
+  const [rightTab, setRightTab] = useState('about'); // 'about' or 'settings'
+  const fileInputRef = useRef(null);
+  const [profileImage, setProfileImage] = useState('https://i.pravatar.cc/150?u=a042581f4e29026704d');
+
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main St, City, State 12345',
-    bio: 'Experienced professional with a passion for excellence and continuous learning.',
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'],
-    education: 'Bachelor of Science in Computer Science',
+    name: user?.name || 'Dr. John Smith',
+    email: user?.email || 'johndeo@example.com',
+    phone: '264-625-2583',
+    address: '456, Estern evenue, Courtrage area, New York',
+    bio: "Completed my graduation in Arts from the well known and renowned institution of India – SARDAR PATEL ARTS COLLEGE, BARODA in 2000-01, which was affiliated to M.S. University. I ranker in University exams from the same university from 1996-01.",
+    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'HTML', 'CSS'],
+    education: 'Worked as Professor and Head of the department at Sarda Collage, Rajkot, Gujarat from 2003-2015',
     experience: '5+ years in software development',
-    department: user?.department || '',
-    position: user?.position || ''
+    department: user?.department || 'Technology',
+    position: user?.position || 'Senior Employee',
+    location: 'India',
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
-  // Mock activity data
-  const activities = [
-    {
-      id: 1,
-      type: 'login',
-      text: 'Logged into the system',
-      time: '2 hours ago'
-    },
-    {
-      id: 2,
-      type: 'update',
-      text: 'Updated profile information',
-      time: '1 day ago'
-    },
-    {
-      id: 3,
-      type: 'report',
-      text: 'Generated monthly report',
-      time: '3 days ago'
-    },
-    {
-      id: 4,
-      type: 'meeting',
-      text: 'Attended team meeting',
-      time: '1 week ago'
-    }
-  ];
+  const [initialFormData] = useState(formData);
+  const [initialProfileImage] = useState(profileImage);
 
-  const handleSave = () => {
-    Swal.fire('Success', 'Profile updated successfully', 'success');
-    setShowModal(false);
+  const stats = {
+    following: 564,
+    followers: '18k',
+    posts: 565
   };
 
-  const handleCancel = () => {
-    setFormData({
-      name: user?.name || '',
-      email: user?.email || '',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main St, City, State 12345',
-      bio: 'Experienced professional with a passion for excellence and continuous learning.',
-      skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'],
-      education: 'Bachelor of Science in Computer Science',
-      experience: '5+ years in software development',
-      department: user?.department || '',
-      position: user?.position || ''
-    });
-    setShowModal(false);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const getInitials = (name) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
-  };
-
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case 'login':
-        return '🔐';
-      case 'update':
-        return '✏️';
-      case 'report':
-        return '📊';
-      case 'meeting':
-        return '👥';
-      default:
-        return '📝';
+  const handleSave = () => {
+    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+      Swal.fire('Error', 'New passwords do not match!', 'error');
+      return;
     }
+    console.log('Saving data:', formData);
+    Swal.fire('Success', 'Profile updated successfully', 'success');
+    setRightTab('about'); // Switch back to about tab
+  };
+
+  const handleCancel = () => {
+    setFormData(initialFormData); // Revert changes
+    setProfileImage(initialProfileImage);
+    setRightTab('about');
   };
 
   return (
-    <div className="profile-container">
-      {/* Header */}
-      <div className="profile-header">
-        <h1 className="profile-title">Profile</h1>
-        <button className="edit-profile-btn" onClick={() => setShowModal(true)}>
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          Edit Profile
-        </button>
+    <div className="profile-page-container">
+      <div className="profile-page-header">
+        <h1 className="profile-page-title">Profile</h1>
+        <div className="breadcrumbs">
+          <span>Employees</span> &gt; <span>Profile</span>
+        </div>
       </div>
 
-      {/* Profile Content */}
-      <div className="profile-content">
-        {/* Profile Card */}
-        <div className="profile-card">
-          <div className="profile-avatar-section">
-            <div className="profile-avatar">
-              {getInitials(user?.name)}
+      <div className="profile-page-content">
+        {/* Left Column */}
+        <div className="profile-left-column">
+          <div className="profile-card-dark">
+            <div className="profile-avatar-container">
+              <img src={profileImage} alt="Profile" className="profile-avatar-img" />
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageChange} 
+                style={{ display: 'none' }} 
+                accept="image/*"
+              />
+              <button className="change-avatar-btn" onClick={() => fileInputRef.current.click()}>
+                <i className="fas fa-camera"></i>
+              </button>
             </div>
-            <h2 className="profile-name">{user?.name}</h2>
-            <p className="profile-role">{user?.position}</p>
-            <p className="profile-department">{user?.department} Department</p>
-          </div>
-          
-          <div className="profile-stats">
-            <div className="profile-stat">
-              <div className="stat-number">156</div>
-              <div className="stat-label">Projects</div>
+            <h2 className="profile-card-name">{formData.name}</h2>
+            <p className="profile-card-role">{formData.position}</p>
+            <div className="profile-contact-info">
+              <p><i className="fas fa-map-marker-alt"></i> {formData.address}</p>
+              <p><i className="fas fa-phone-alt"></i> {formData.phone}</p>
             </div>
-            <div className="profile-stat">
-              <div className="stat-number">5.2</div>
-              <div className="stat-label">Years</div>
-            </div>
-            <div className="profile-stat">
-              <div className="stat-number">98%</div>
-              <div className="stat-label">Rating</div>
-            </div>
-            <div className="profile-stat">
-              <div className="stat-number">23</div>
-              <div className="stat-label">Awards</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Details */}
-        <div className="profile-details">
-          <div className="details-header">
-            <h2 className="details-title">Personal Information</h2>
-          </div>
-          
-          <div className="details-content">
-            {/* Basic Information */}
-            <div className="details-section">
-              <h3 className="section-title">Basic Information</h3>
-              <div className="details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Full Name</span>
-                  <span className="detail-value">{formData.name}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Email Address</span>
-                  <span className="detail-value email">{formData.email}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Phone Number</span>
-                  <span className="detail-value phone">{formData.phone}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Address</span>
-                  <span className="detail-value">{formData.address}</span>
-                </div>
+            <div className="profile-card-stats">
+              <div className="stat-item">
+                <span className="stat-value">{stats.following}</span>
+                <span className="stat-label">Following</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.followers}</span>
+                <span className="stat-label">Followers</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{stats.posts}</span>
+                <span className="stat-label">Post</span>
               </div>
             </div>
-
-            {/* Professional Information */}
-            <div className="details-section">
-              <h3 className="section-title">Professional Information</h3>
-              <div className="details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Department</span>
-                  <span className="detail-value">{formData.department}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Position</span>
-                  <span className="detail-value">{formData.position}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Education</span>
-                  <span className="detail-value">{formData.education}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Experience</span>
-                  <span className="detail-value">{formData.experience}</span>
-                </div>
-              </div>
+          </div>
+          <div className="profile-tabs-card">
+            <div className="tabs-nav">
+              <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+                About
+              </button>
+              <button className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>
+                Skills
+              </button>
             </div>
-
-            {/* Bio */}
-            <div className="details-section">
-              <h3 className="section-title">Bio</h3>
-              <p className="detail-value">{formData.bio}</p>
-            </div>
-
-            {/* Skills */}
-            <div className="details-section">
-              <h3 className="section-title">Skills</h3>
-              <div className="skills-section">
+            <div className="tab-content">
+              {activeTab === 'about' && (
+                <p>{formData.bio}</p>
+              )}
+              {activeTab === 'skills' && (
                 <div className="skills-grid">
-                  {formData.skills.map((skill, index) => (
-                    <span key={index} className="skill-tag">{skill}</span>
+                  {formData.skills.map(skill => (
+                    <span key={skill} className="skill-badge">{skill}</span>
                   ))}
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="profile-right-column">
+          <div className="profile-details-card">
+            <div className="details-card-header">
+              <button 
+                className={`details-tab-btn ${rightTab === 'about' ? 'active' : ''}`}
+                onClick={() => setRightTab('about')}
+              >
+                <i className="fas fa-user"></i> About Me
+              </button>
+              <button 
+                className={`details-tab-btn ${rightTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setRightTab('settings')}
+              >
+                <i className="fas fa-cog"></i> Settings
+              </button>
+            </div>
+            <div className="details-card-body">
+              {rightTab === 'about' && (
+                <>
+                  <h3 className="section-heading">About</h3>
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <span className="info-label">Full Name</span>
+                      <span className="info-value">{formData.name}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Mobile</span>
+                      <span className="info-value">{formData.phone}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Email</span>
+                      <span className="info-value">{formData.email}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Location</span>
+                      <span className="info-value">{formData.location}</span>
+                    </div>
+                  </div>
+                  <p className="bio-text">{formData.bio}</p>
+                  <p className="bio-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
+                  
+                  <h3 className="section-heading">Education</h3>
+                  <p className="bio-text">{formData.education}</p>
+                </>
+              )}
+
+              {rightTab === 'settings' && (
+                <form className="profile-settings-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                  <h3 className="section-heading">Edit Profile Information</h3>
+                  <div className="settings-form-grid">
+                    <div className="form-group">
+                      <label className="form-label">Full Name</label>
+                      <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Email</label>
+                      <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="form-input" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Phone</label>
+                      <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className="form-input" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Location</label>
+                      <input type="text" name="location" value={formData.location} onChange={handleInputChange} className="form-input" />
+                    </div>
+                    <div className="form-group full-width">
+                      <label className="form-label">Address</label>
+                      <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-input" />
+                    </div>
+                     <div className="form-group full-width">
+                      <label className="form-label">Bio</label>
+                      <textarea name="bio" value={formData.bio} onChange={handleInputChange} className="form-textarea" rows="4"></textarea>
+                    </div>
+                    <div className="form-group full-width">
+                      <label className="form-label">Education</label>
+                      <input type="text" name="education" value={formData.education} onChange={handleInputChange} className="form-input" />
+                    </div>
+                  </div>
+
+                  <h3 className="section-heading">Change Password</h3>
+                  <div className="settings-form-grid">
+                    <div className="form-group">
+                      <label className="form-label">Old Password</label>
+                      <input type="password" name="oldPassword" value={formData.oldPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">New Password</label>
+                      <input type="password" name="newPassword" value={formData.newPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
+                    </div>
+                     <div className="form-group">
+                      <label className="form-label">Confirm New Password</label>
+                      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="button" className="form-btn btn-secondary" onClick={handleCancel}>Cancel</button>
+                    <button type="submit" className="form-btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Activity Section */}
-      <div className="activity-section">
-        <div className="activity-header">
-          <h2 className="activity-title">Recent Activity</h2>
-        </div>
-        <div className="activity-content">
-          {activities.map(activity => (
-            <div key={activity.id} className="activity-item">
-              <div className="activity-icon">
-                {getActivityIcon(activity.type)}
-              </div>
-              <div className="activity-content-details">
-                <p className="activity-text">{activity.text}</p>
-                <p className="activity-time">{activity.time}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Edit Profile Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Edit Profile</h2>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-              <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  className="form-input"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Email Address</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-input"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Phone Number</label>
-                <input
-                  type="text"
-                  name="phone"
-                  className="form-input"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Address</label>
-                <input
-                  type="text"
-                  name="address"
-                  className="form-input"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Bio</label>
-                <textarea
-                  name="bio"
-                  className="form-textarea"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  rows="3"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Education</label>
-                <input
-                  type="text"
-                  name="education"
-                  className="form-input"
-                  value={formData.education}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Experience</label>
-                <input
-                  type="text"
-                  name="experience"
-                  className="form-input"
-                  value={formData.experience}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="save-btn">
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

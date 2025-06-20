@@ -14,6 +14,7 @@
   padding: 2rem;
   background-color: var(--profile-bg-color);
   font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
 }
 
 /* Header */
@@ -64,12 +65,7 @@
 }
 
 .profile-avatar-container {
-  position: relative;
   margin-bottom: 1rem;
-  width: 120px;
-  height: 120px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .profile-avatar-img {
@@ -78,33 +74,6 @@
   border-radius: 50%;
   border: 4px solid var(--profile-accent-blue);
   object-fit: cover;
-}
-
-.change-avatar-btn {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background-color: var(--profile-accent-blue);
-  color: white;
-  border: 2px solid var(--profile-dark-card-bg);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  opacity: 0.8;
-}
-
-.change-avatar-btn:hover {
-  background-color: #2980b9;
-  opacity: 1;
-}
-
-.change-avatar-btn i {
-  font-size: 0.9rem;
 }
 
 .profile-card-name {
@@ -289,68 +258,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* Settings Form in Right Column */
-.profile-settings-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.settings-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--profile-text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--profile-border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: var(--profile-text-primary);
-  background-color: #f8f9fa;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--profile-accent-blue);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--profile-border-color);
-}
-
+/* Mock Button Styles (for 'Not Found' page) */
 .form-btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -370,16 +278,6 @@
   background-color: #2980b9;
 }
 
-.btn-secondary {
-  background-color: #ecf0f1;
-  color: var(--profile-text-secondary);
-  border: 1px solid var(--profile-border-color);
-}
-
-.btn-secondary:hover {
-  background-color: #bdc3c7;
-  color: white;
-}
 
 /* Responsive Design */
 @media (max-width: 992px) {
@@ -403,9 +301,6 @@
     margin-bottom: 1.5rem;
   }
   .info-grid {
-    grid-template-columns: 1fr;
-  }
-  .settings-form-grid {
     grid-template-columns: 1fr;
   }
   .details-card-body, .profile-card-dark, .tab-content {

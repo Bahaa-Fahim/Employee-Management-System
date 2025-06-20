@@ -119,69 +119,69 @@ const Settings = () => {
   const getTabContent = () => {
     switch (activeTab) {
       case 'general':
-        return (
+  return (
           <div className="settings-section">
             <div className="section-header">
               <h3 className="section-title">Company Information</h3>
               <p className="section-description">Manage your company details and basic preferences</p>
-            </div>
+      </div>
             <div className="settings-grid">
               <div className="form-group">
                 <label className="form-label">Company Name</label>
-                <input
-                  type="text"
+                    <input
+                      type="text"
                   className="form-input"
-                  value={settings.general.companyName}
-                  onChange={(e) => handleSettingChange('general', 'companyName', e.target.value)}
-                />
-              </div>
-              
+                      value={settings.general.companyName}
+                      onChange={(e) => handleSettingChange('general', 'companyName', e.target.value)}
+                    />
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Timezone</label>
-                <select
+                    <select
                   className="form-select"
-                  value={settings.general.timezone}
-                  onChange={(e) => handleSettingChange('general', 'timezone', e.target.value)}
-                >
-                  <option value="UTC-5">UTC-5 (Eastern Time)</option>
-                  <option value="UTC-6">UTC-6 (Central Time)</option>
-                  <option value="UTC-7">UTC-7 (Mountain Time)</option>
-                  <option value="UTC-8">UTC-8 (Pacific Time)</option>
-                  <option value="UTC+0">UTC+0 (GMT)</option>
+                      value={settings.general.timezone}
+                      onChange={(e) => handleSettingChange('general', 'timezone', e.target.value)}
+                    >
+                      <option value="UTC-5">UTC-5 (Eastern Time)</option>
+                      <option value="UTC-6">UTC-6 (Central Time)</option>
+                      <option value="UTC-7">UTC-7 (Mountain Time)</option>
+                      <option value="UTC-8">UTC-8 (Pacific Time)</option>
+                      <option value="UTC+0">UTC+0 (GMT)</option>
                   <option value="UTC+1">UTC+1 (Central European Time)</option>
                   <option value="UTC+2">UTC+2 (Eastern European Time)</option>
-                </select>
-              </div>
-              
+                    </select>
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Date Format</label>
-                <select
+                    <select
                   className="form-select"
-                  value={settings.general.dateFormat}
-                  onChange={(e) => handleSettingChange('general', 'dateFormat', e.target.value)}
-                >
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                </select>
-              </div>
-              
+                      value={settings.general.dateFormat}
+                      onChange={(e) => handleSettingChange('general', 'dateFormat', e.target.value)}
+                    >
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Language</label>
-                <select
+                    <select
                   className="form-select"
-                  value={settings.general.language}
-                  onChange={(e) => handleSettingChange('general', 'language', e.target.value)}
-                >
-                  <option value="English">English</option>
-                  <option value="Spanish">Spanish</option>
-                  <option value="French">French</option>
-                  <option value="German">German</option>
+                      value={settings.general.language}
+                      onChange={(e) => handleSettingChange('general', 'language', e.target.value)}
+                    >
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
                   <option value="Arabic">Arabic</option>
-                </select>
-              </div>
-            </div>
-          </div>
+                    </select>
+                  </div>
+                    </div>
+                  </div>
         );
 
       case 'security':
@@ -212,14 +212,14 @@ const Settings = () => {
                   className={`toggle-switch ${settings.security.autoLogout ? 'active' : ''}`}
                   onClick={() => handleSettingChange('security', 'autoLogout', !settings.security.autoLogout)}
                 />
-              </div>
-              
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Session Timeout (minutes)</label>
                 <select
                   className="form-select"
-                  value={settings.security.sessionTimeout}
-                  onChange={(e) => handleSettingChange('security', 'sessionTimeout', parseInt(e.target.value))}
+                      value={settings.security.sessionTimeout}
+                      onChange={(e) => handleSettingChange('security', 'sessionTimeout', parseInt(e.target.value))}
                 >
                   <option value={15}>15 minutes</option>
                   <option value={30}>30 minutes</option>
@@ -227,14 +227,14 @@ const Settings = () => {
                   <option value={120}>2 hours</option>
                   <option value={240}>4 hours</option>
                 </select>
-              </div>
-              
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Password Expiry (days)</label>
                 <select
                   className="form-select"
-                  value={settings.security.passwordExpiry}
-                  onChange={(e) => handleSettingChange('security', 'passwordExpiry', parseInt(e.target.value))}
+                      value={settings.security.passwordExpiry}
+                      onChange={(e) => handleSettingChange('security', 'passwordExpiry', parseInt(e.target.value))}
                 >
                   <option value={30}>30 days</option>
                   <option value={60}>60 days</option>
@@ -242,14 +242,14 @@ const Settings = () => {
                   <option value={180}>180 days</option>
                   <option value={365}>1 year</option>
                 </select>
-              </div>
-              
+                  </div>
+
               <div className="form-group">
                 <label className="form-label">Maximum Login Attempts</label>
                 <select
                   className="form-select"
-                  value={settings.security.loginAttempts}
-                  onChange={(e) => handleSettingChange('security', 'loginAttempts', parseInt(e.target.value))}
+                      value={settings.security.loginAttempts}
+                      onChange={(e) => handleSettingChange('security', 'loginAttempts', parseInt(e.target.value))}
                 >
                   <option value={3}>3 attempts</option>
                   <option value={5}>5 attempts</option>
@@ -271,13 +271,13 @@ const Settings = () => {
             <div className="settings-grid">
               <div className="form-group">
                 <label className="form-label">Theme</label>
-                <select
+                    <select
                   className="form-select"
-                  value={settings.appearance.theme}
-                  onChange={(e) => handleSettingChange('appearance', 'theme', e.target.value)}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
+                      value={settings.appearance.theme}
+                      onChange={(e) => handleSettingChange('appearance', 'theme', e.target.value)}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
                   <option value="auto">Auto (System)</option>
                 </select>
               </div>
@@ -292,9 +292,9 @@ const Settings = () => {
                   <option value="small">Small</option>
                   <option value="medium">Medium</option>
                   <option value="large">Large</option>
-                </select>
-              </div>
-              
+                    </select>
+                  </div>
+
               <div className="toggle-container">
                 <div className="toggle-info">
                   <div className="toggle-label">Compact Mode</div>
@@ -381,8 +381,8 @@ const Settings = () => {
               </div>
               
               <div className="checkbox-container">
-                <input
-                  type="checkbox"
+                      <input
+                        type="checkbox"
                   className="checkbox-input"
                   checked={settings.notifications.reportNotifications}
                   onChange={(e) => handleSettingChange('notifications', 'reportNotifications', e.target.checked)}
@@ -391,11 +391,11 @@ const Settings = () => {
                   <div className="checkbox-label">Report Notifications</div>
                   <div className="checkbox-description">Get notified when reports are ready</div>
                 </div>
-              </div>
-              
+                  </div>
+
               <div className="checkbox-container">
-                <input
-                  type="checkbox"
+                      <input
+                        type="checkbox"
                   className="checkbox-input"
                   checked={settings.notifications.updateNotifications}
                   onChange={(e) => handleSettingChange('notifications', 'updateNotifications', e.target.checked)}
@@ -404,8 +404,8 @@ const Settings = () => {
                   <div className="checkbox-label">Update Notifications</div>
                   <div className="checkbox-description">Get notified about system updates</div>
                 </div>
-              </div>
-              
+                  </div>
+
               <div className="checkbox-container">
                 <input
                   type="checkbox"
