@@ -71,7 +71,9 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      const { user } = await login(formData.email, formData.password);
+      
+      console.log('Login successful for user:', user);
       
       Swal.fire({
         icon: 'success',
@@ -81,7 +83,17 @@ const Login = () => {
         showConfirmButton: false
       });
 
-      navigate('/dashboard');
+      if (user && user.role === 'manager') {
+        console.log('Redirecting manager to manager-dashboard');
+        navigate('/manager-dashboard');
+      } else if (user && user.role === 'employee') {
+        console.log('Redirecting employee to employee-dashboard');
+        navigate('/employee-dashboard');
+      } else {
+        console.log('Redirecting admin to dashboard');
+        navigate('/dashboard');
+      }
+
     } catch (error) {
       Swal.fire({
         icon: 'error',

@@ -46,25 +46,24 @@ const Header = () => {
       manager: 'role-badge manager',
       employee: 'role-badge employee'
     };
-    
     return badgeClasses[role] || 'role-badge';
   };
 
   const getCurrentTimeString = () => {
-    return currentTime.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: true 
+      hour12: true
     });
   };
 
   const getCurrentDate = () => {
-    return currentTime.toLocaleDateString('en-US', { 
+    return currentTime.toLocaleDateString('en-US', {
       weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 

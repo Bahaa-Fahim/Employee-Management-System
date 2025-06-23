@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import './Projects.css';
 
@@ -173,7 +173,7 @@ const Projects = () => {
           <div key={project.id} className="project-card">
             <div className="project-header">
               <div className="project-title-section">
-                <h3 className="project-title">{project.name}</h3>
+                <Link to={`/projects/${project.id}`} className="project-link">{project.name}</Link>
                 <div className="project-badges">
                   <span 
                     className="status-badge" 

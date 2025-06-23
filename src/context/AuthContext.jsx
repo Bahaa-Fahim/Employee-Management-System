@@ -45,7 +45,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(true); // Toggle between mock and real API
   
   // Get mock users from localStorage or use initial data
@@ -108,8 +107,6 @@ export const AuthProvider = ({ children }) => {
           }
         }
     }
-    
-    setLoading(false);
     };
 
     initializeAuth();
@@ -232,13 +229,17 @@ export const AuthProvider = ({ children }) => {
   // Check permissions
   const hasPermission = (requiredRole) => {
     if (!user) return false;
-    return user.role === requiredRole || user.role === 'admin';
+    // Admin has all permissions.
+    if (user.role === 'admin') return true;
+    return user.role === requiredRole;
   };
 
   // Check multiple permissions
   const hasAnyPermission = (requiredRoles) => {
     if (!user) return false;
-    return requiredRoles.includes(user.role) || user.role === 'admin';
+    // Admin has all permissions.
+    if (user.role === 'admin') return true;
+    return requiredRoles.includes(user.role);
   };
 
   // Toggle between mock and real API
@@ -263,7 +264,6 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     isAuthenticated,
-    loading,
     useMockData,
     login,
     logout,

@@ -4,6 +4,7 @@ import { useProjects } from '../context/ProjectContext';
 import ProjectForm from '../components/ProjectForm';
 import Swal from 'sweetalert2';
 import './Projects.css';
+import { FaEdit } from 'react-icons/fa';
 
 const EditProject = () => {
   const navigate = useNavigate();
@@ -87,18 +88,27 @@ const EditProject = () => {
   };
 
   return (
-    <div className="edit-project-container">
-      <div className="page-header">
-        <h1>Edit Project</h1>
+    <div className="edit-project-bg" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
+      <div className="edit-project-page" style={{ width: '100%', maxWidth: 600, margin: '0 auto' }}>
+        <div className="page-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <FaEdit style={{ color: '#f59e0b', fontSize: '2.2rem' }} />
+            <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111827', margin: 0 }}>Edit Project</h1>
+          </div>
+          <p style={{ color: '#6b7280', fontSize: '1.1rem', marginTop: '0.5rem', textAlign: 'center' }}>
+            Update the details below to edit this project.
+          </p>
+        </div>
+        <div className="form-card" style={{ background: 'white', borderRadius: '1rem', boxShadow: '0 8px 32px rgba(102,126,234,0.10)', padding: '2.5rem 2rem', margin: '0 auto' }}>
+          <ProjectForm
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleTeamChange={handleTeamChange}
+            handleSubmit={handleSubmit}
+            isEdit={true}
+          />
+        </div>
       </div>
-      
-      <ProjectForm
-        formData={formData}
-        handleInputChange={handleInputChange}
-        handleTeamChange={handleTeamChange}
-        handleSubmit={handleSubmit}
-        isEdit={true}
-      />
     </div>
   );
 };
