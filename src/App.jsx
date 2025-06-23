@@ -27,7 +27,7 @@ function App() {
   return (
     <AuthProvider>
       <ProjectProvider>
-        <Router basename="/Employee-Management-System">
+        <Router >
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
