@@ -1,99 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { FiPlus, FiSearch, FiEdit3, FiTrash2, FiEye, FiUsers, FiUserCheck, FiUserX, FiDollarSign, FiCalendar, FiMail, FiPhone, FiMapPin, FiShield, FiUsers as FiManager } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
 import './Employees.css';
 
 const Employees = () => {
-  const { addMockUser } = useAuth();
+  const { getAllUsers, addUser, updateUserById, deleteUser, resetUserPassword, getUserStats, sendNotification } = useAuth();
   
-  const [employees, setEmployees] = useState([
-    {
-      id: 1,
-      name: 'Ahmed Mohamed',
-      email: 'ahmed.mohamed@company.com',
-      department: 'IT',
-      position: 'Software Developer',
-      salary: 45000,
-      status: 'active',
-      hireDate: '2023-01-15',
-      role: 'employee'
-    },
-    {
-      id: 2,
-      name: 'Fatima Ali',
-      email: 'fatima.ali@company.com',
-      department: 'HR',
-      position: 'HR Manager',
-      salary: 55000,
-      status: 'active',
-      hireDate: '2022-08-20',
-      role: 'manager'
-    },
-    {
-      id: 3,
-      name: 'Mohamed Ahmed',
-      email: 'mohamed.ahmed@company.com',
-      department: 'Marketing',
-      position: 'Marketing Specialist',
-      salary: 40000,
-      status: 'on-leave',
-      hireDate: '2023-03-10',
-      role: 'employee'
-    },
-    {
-      id: 4,
-      name: 'Aisha Hassan',
-      email: 'aisha.hassan@company.com',
-      department: 'Finance',
-      position: 'Financial Analyst',
-      salary: 48000,
-      status: 'active',
-      hireDate: '2022-11-05',
-      role: 'employee'
-    },
-    {
-      id: 5,
-      name: 'Omar Khalil',
-      email: 'omar.khalil@company.com',
-      department: 'IT',
-      position: 'System Administrator',
-      salary: 52000,
-      status: 'inactive',
-      hireDate: '2021-06-15',
-      role: 'employee'
-    }
-  ]);
-
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    onLeave: 0,
+    totalSalary: 0
+  });
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     department: '',
     position: '',
     salary: '',
     status: 'active',
-    password: '123456', // Default password for new employees
-    role: 'employee', // Default role
-    managerDepartment: '' // Department for managers
+    password: '123456',
+    role: 'employee',
+    managerDepartment: '',
+    address: '',
+    hireDate: new Date().toISOString().split('T')[0],
+    emergencyContact: {
+      name: '',
+      relationship: '',
+      phone: ''
+    }
   });
 
-  // Filter employees based on search term
-  const filteredEmployees = employees.filter(employee =>
-    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.position.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // تحميل البيانات عند تحميل الصفحة
+  useEffect(() => {
+    loadEmployees();
+  }, []);
 
-  // Calculate statistics
-  const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(emp => emp.status === 'active').length;
-  const onLeaveEmployees = employees.filter(emp => emp.status === 'on-leave').length;
-  const totalSalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
+  const loadEmployees = () => {
+    try {
+      setLoading(true);
+      const users = getAllUsers();
+      setEmployees(users);
+      
+      // حساب الإحصائيات
+      const totalSalary = users.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+      setStats({
+        total: users.length,
+        active: users.filter(emp => emp.status === 'active').length,
+        inactive: users.filter(emp => emp.status === 'inactive').length,
+        onLeave: users.filter(emp => emp.status === 'on-leave').length,
+        totalSalary
+      });
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load employees data.',
+        customClass: { popup: 'rounded-xl' }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // تصفية الموظفين
+  const filteredEmployees = employees.filter(employee => {
+    const matchesSearch = 
+      employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.position?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
+    const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+    
+    return matchesSearch && matchesStatus && matchesDepartment;
+  });
 
   const handleAddEmployee = () => {
     setEditingEmployee(null);
@@ -101,33 +97,49 @@ const Employees = () => {
       firstName: '',
       lastName: '',
       email: '',
+      phone: '',
       department: '',
       position: '',
       salary: '',
       status: 'active',
       password: '123456',
       role: 'employee',
-      managerDepartment: ''
+      managerDepartment: '',
+      address: '',
+      hireDate: new Date().toISOString().split('T')[0],
+      emergencyContact: {
+        name: '',
+        relationship: '',
+        phone: ''
+      }
     });
     setShowModal(true);
   };
 
   const handleEditEmployee = (employee) => {
     setEditingEmployee(employee);
-    const [firstName, ...lastNameParts] = employee.name.split(' ');
+    const [firstName, ...lastNameParts] = (employee.name || '').split(' ');
     const lastName = lastNameParts.join(' ');
     
     setFormData({
       firstName: firstName || '',
       lastName: lastName || '',
-      email: employee.email,
-      department: employee.department,
-      position: employee.position,
-      salary: employee.salary.toString(),
-      status: employee.status,
-      password: '123456', // Keep default for editing
-      role: employee.role,
-      managerDepartment: employee.managerDepartment
+      email: employee.email || '',
+      phone: employee.phone || '',
+      department: employee.department || '',
+      position: employee.position || '',
+      salary: (employee.salary || '').toString(),
+      status: employee.status || 'active',
+      password: '123456',
+      role: employee.role || 'employee',
+      managerDepartment: employee.managerDepartment || '',
+      address: employee.address || '',
+      hireDate: employee.hireDate || new Date().toISOString().split('T')[0],
+      emergencyContact: employee.emergencyContact || {
+        name: '',
+        relationship: '',
+        phone: ''
+      }
     });
     setShowModal(true);
   };
@@ -138,57 +150,78 @@ const Employees = () => {
       text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel',
-      background: '#fff',
-      backdrop: 'rgba(0,0,0,0.4)',
-      customClass: {
-        popup: 'swal-custom-popup',
-        title: 'swal-custom-title',
-        content: 'swal-custom-content'
-      }
+      customClass: { popup: 'rounded-xl' }
     }).then((result) => {
       if (result.isConfirmed) {
-        setEmployees(employees.filter(emp => emp.id !== id));
+        try {
+          deleteUser(id);
+          loadEmployees(); // إعادة تحميل البيانات
+          
         Swal.fire({
           title: 'Deleted!',
-          text: 'Employee has been deleted.',
+            text: 'Employee has been deleted successfully.',
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
-          background: '#fff',
-          customClass: {
-            popup: 'swal-custom-popup',
-            title: 'swal-custom-title',
-            content: 'swal-custom-content'
-          }
+            customClass: { popup: 'rounded-xl' }
+          });
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to delete employee.',
+            customClass: { popup: 'rounded-xl' }
         });
+        }
       }
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (editingEmployee) {
-      // Update existing employee
-      setEmployees(employees.map(emp =>
-        emp.id === editingEmployee.id
-          ? { 
-              ...emp, 
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Information',
+        text: 'Please fill in all required fields.',
+        customClass: { popup: 'rounded-xl' }
+      });
+      return;
+    }
+
+    try {
+      const employeeData = {
               name: `${formData.firstName} ${formData.lastName}`,
               email: formData.email,
+        phone: formData.phone,
               department: formData.department,
               position: formData.position,
-              salary: parseInt(formData.salary),
+        salary: parseInt(formData.salary) || 0,
               status: formData.status,
               role: formData.role,
-              managerDepartment: formData.managerDepartment
-            }
-          : emp
-      ));
+        managerDepartment: formData.managerDepartment,
+        address: formData.address,
+        hireDate: formData.hireDate,
+        emergencyContact: formData.emergencyContact,
+        password: formData.password
+      };
+
+      if (editingEmployee) {
+        // تحديث موظف موجود
+        updateUserById(editingEmployee.id, employeeData);
+        
+        // إرسال إشعار للموظف
+        sendNotification(
+          editingEmployee.id,
+          'Profile Updated',
+          'Your profile information has been updated by the administrator.',
+          'info'
+        );
       
       Swal.fire({
         title: 'Updated!',
@@ -196,302 +229,107 @@ const Employees = () => {
         icon: 'success',
         timer: 2000,
         showConfirmButton: false,
-        background: '#fff',
-        customClass: {
-          popup: 'swal-custom-popup',
-          title: 'swal-custom-title',
-          content: 'swal-custom-content'
-        }
+          customClass: { popup: 'rounded-xl' }
       });
     } else {
-      // Add new employee
-      const newEmployee = {
-        id: Date.now(),
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        department: formData.department,
-        position: formData.position,
-        salary: parseInt(formData.salary),
-        status: formData.status,
-        hireDate: new Date().toISOString().split('T')[0],
-        role: formData.role,
-        managerDepartment: formData.managerDepartment
-      };
+        // إضافة موظف جديد
+        const newEmployee = addUser(employeeData);
       
-      // Add to employees list
-      setEmployees([...employees, newEmployee]);
-      
-      // Create login account for the new employee
-      try {
-        addMockUser({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          department: formData.department,
-          position: formData.position,
-          role: formData.role,
-          managerDepartment: formData.managerDepartment
-        });
-        
-        // Show success message with login credentials
+        // إرسال إشعار للموظف الجديد
+        sendNotification(
+          newEmployee.id,
+          'Welcome!',
+          'Welcome to the company! Your account has been created successfully.',
+          'success'
+        );
+
         Swal.fire({
-          title: 'Employee Added Successfully!',
-          html: `
-            <div style="text-align: left; margin: 20px 0;">
-              <p><strong>Employee:</strong> ${formData.firstName} ${formData.lastName}</p>
-              <p><strong>Department:</strong> ${formData.department}</p>
-              <p><strong>Position:</strong> ${formData.position}</p>
-              <hr style="margin: 15px 0; border-color: #e5e7eb;">
-              <p style="color: #059669; font-weight: bold;">Login Credentials:</p>
-              <p><strong>Email:</strong> ${formData.email}</p>
-              <p><strong>Password:</strong> ${formData.password}</p>
-              <p style="font-size: 0.9em; color: #6b7280; margin-top: 10px;">
-                The employee can now login using these credentials.
-              </p>
-            </div>
-          `,
+          title: 'Added!',
+          text: 'Employee has been added successfully.',
           icon: 'success',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#059669',
-          background: '#fff',
-          customClass: {
-            popup: 'swal-custom-popup',
-            title: 'swal-custom-title',
-            content: 'swal-custom-content',
-            confirmButton: 'swal-custom-confirm'
-          }
-        });
-      } catch (error) {
-        Swal.fire({
-          title: 'Warning!',
-          text: 'Employee added but there was an issue creating login account.',
-          icon: 'warning',
-          confirmButtonColor: '#f59e0b',
-          background: '#fff',
-          customClass: {
-            popup: 'swal-custom-popup',
-            title: 'swal-custom-title',
-            content: 'swal-custom-content'
-          }
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: 'rounded-xl' }
         });
       }
-    }
-    
-    setShowModal(false);
+
+      setShowModal(false);
+      loadEmployees(); // إعادة تحميل البيانات
+      } catch (error) {
+        Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to save employee.',
+        customClass: { popup: 'rounded-xl' }
+        });
+      }
   };
 
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const { name, value } = e.target;
+    if (name.startsWith('emergencyContact.')) {
+      const field = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        emergencyContact: {
+          ...prev.emergencyContact,
+          [field]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handlePromoteEmployee = (employee) => {
     Swal.fire({
       title: 'Promote Employee',
-      html: `
-        <div style="text-align: left; margin: 20px 0;">
-          <p><strong>Employee:</strong> ${employee.name}</p>
-          <p><strong>Current Role:</strong> ${employee.role}</p>
-          <p><strong>Current Department:</strong> ${employee.department}</p>
-          <hr style="margin: 15px 0; border-color: #e5e7eb;">
-          <p style="color: #059669; font-weight: bold;">Promote to Manager</p>
-          <p>This will give the employee manager privileges and access to manager features.</p>
-        </div>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Promote to Manager',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#059669',
-      background: '#fff',
-      customClass: {
-        popup: 'swal-custom-popup',
-        title: 'swal-custom-title',
-        content: 'swal-custom-content',
-        confirmButton: 'swal-custom-confirm'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Show department selection
-        Swal.fire({
-          title: 'Select Department to Manage',
-          html: `
-            <div style="text-align: left; margin: 20px 0;">
-              <p>Which department should ${employee.name} manage?</p>
-              <select id="managerDepartment" class="swal2-select" style="width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">Select Department</option>
-                <option value="IT">IT Department</option>
-                <option value="HR">HR Department</option>
-                <option value="Marketing">Marketing Department</option>
-                <option value="Finance">Finance Department</option>
-                <option value="Sales">Sales Department</option>
-                <option value="Operations">Operations Department</option>
-              </select>
-            </div>
-          `,
+      text: 'Select department for the new manager:',
+      input: 'select',
+      inputOptions: {
+        'IT': 'IT',
+        'HR': 'HR',
+        'Finance': 'Finance',
+        'Marketing': 'Marketing',
+        'Sales': 'Sales',
+        'Operations': 'Operations'
+      },
           showCancelButton: true,
           confirmButtonText: 'Promote',
           cancelButtonText: 'Cancel',
-          confirmButtonColor: '#059669',
-          preConfirm: () => {
-            const department = document.getElementById('managerDepartment').value;
-            if (!department) {
-              Swal.showValidationMessage('Please select a department');
-              return false;
-            }
-            return department;
-          }
+      customClass: { popup: 'rounded-xl' }
         }).then((result) => {
           if (result.isConfirmed) {
-            const newDepartment = result.value;
-            
-            // Update employee
-            setEmployees(employees.map(emp =>
-              emp.id === employee.id
-                ? { 
-                    ...emp, 
+        try {
+          updateUserById(employee.id, {
                     role: 'manager',
-                    managerDepartment: newDepartment,
-                    position: `${newDepartment} Manager`
-                  }
-                : emp
-            ));
+            managerDepartment: result.value
+          });
             
-            // Update login account
-            try {
-              // Remove old user and add new manager
-              const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
-              const updatedUsers = users.map(user => 
-                user.email === employee.email 
-                  ? { ...user, role: 'manager', department: newDepartment }
-                  : user
-              );
-              localStorage.setItem('mockUsers', JSON.stringify(updatedUsers));
+          // إرسال إشعار للموظف
+          sendNotification(
+            employee.id,
+            'Congratulations!',
+            `You have been promoted to Manager of ${result.value} department.`,
+            'success'
+          );
+
+          loadEmployees();
               
               Swal.fire({
-                title: 'Promoted Successfully!',
-                html: `
-                  <div style="text-align: left; margin: 20px 0;">
-                    <p><strong>Employee:</strong> ${employee.name}</p>
-                    <p><strong>New Role:</strong> Manager</p>
-                    <p><strong>Managing Department:</strong> ${newDepartment}</p>
-                    <p><strong>New Position:</strong> ${newDepartment} Manager</p>
-                    <hr style="margin: 15px 0; border-color: #e5e7eb;">
-                    <p style="color: #059669; font-weight: bold;">Login Updated</p>
-                    <p>The employee can now login with manager privileges.</p>
-                  </div>
-                `,
+            title: 'Promoted!',
+            text: `${employee.name} has been promoted to Manager.`,
                 icon: 'success',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#059669'
+            customClass: { popup: 'rounded-xl' }
               });
             } catch (error) {
               Swal.fire({
-                title: 'Warning!',
-                text: 'Employee promoted but there was an issue updating login account.',
-                icon: 'warning',
-                confirmButtonColor: '#f59e0b'
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to promote employee.',
+            customClass: { popup: 'rounded-xl' }
               });
             }
-          }
-        });
-      }
-    });
-  };
-
-  const handleTransferManager = (employee) => {
-    Swal.fire({
-      title: 'Transfer Manager',
-      html: `
-        <div style="text-align: left; margin: 20px 0;">
-          <p><strong>Manager:</strong> ${employee.name}</p>
-          <p><strong>Current Department:</strong> ${employee.managerDepartment || employee.department}</p>
-          <hr style="margin: 15px 0; border-color: #e5e7eb;">
-          <p>Select the new department to transfer this manager to:</p>
-          <select id="transferDepartment" class="swal2-select" style="width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-            <option value="">Select New Department</option>
-            <option value="IT">IT Department</option>
-            <option value="HR">HR Department</option>
-            <option value="Marketing">Marketing Department</option>
-            <option value="Finance">Finance Department</option>
-            <option value="Sales">Sales Department</option>
-            <option value="Operations">Operations Department</option>
-          </select>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Transfer',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#3b82f6',
-      preConfirm: () => {
-        const department = document.getElementById('transferDepartment').value;
-        if (!department) {
-          Swal.showValidationMessage('Please select a department');
-          return false;
-        }
-        if (department === (employee.managerDepartment || employee.department)) {
-          Swal.showValidationMessage('Please select a different department');
-          return false;
-        }
-        return department;
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const newDepartment = result.value;
-        
-        // Update employee
-        setEmployees(employees.map(emp =>
-          emp.id === employee.id
-            ? { 
-                ...emp, 
-                managerDepartment: newDepartment,
-                department: newDepartment,
-                position: `${newDepartment} Manager`
-              }
-            : emp
-        ));
-        
-        // Update login account
-        try {
-          const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
-          const updatedUsers = users.map(user => 
-            user.email === employee.email 
-              ? { ...user, department: newDepartment }
-              : user
-          );
-          localStorage.setItem('mockUsers', JSON.stringify(updatedUsers));
-          
-          Swal.fire({
-            title: 'Transferred Successfully!',
-            html: `
-              <div style="text-align: left; margin: 20px 0;">
-                <p><strong>Manager:</strong> ${employee.name}</p>
-                <p><strong>New Department:</strong> ${newDepartment}</p>
-                <p><strong>New Position:</strong> ${newDepartment} Manager</p>
-                <hr style="margin: 15px 0; border-color: #e5e7eb;">
-                <p style="color: #059669; font-weight: bold;">Transfer Complete</p>
-                <p>The manager has been transferred to the new department.</p>
-              </div>
-            `,
-            icon: 'success',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#3b82f6'
-          });
-        } catch (error) {
-          Swal.fire({
-            title: 'Warning!',
-            text: 'Manager transferred but there was an issue updating login account.',
-            icon: 'warning',
-            confirmButtonColor: '#f59e0b'
-          });
-        }
       }
     });
   };
@@ -499,233 +337,382 @@ const Employees = () => {
   const handleDemoteManager = (employee) => {
     Swal.fire({
       title: 'Demote Manager',
-      html: `
-        <div style="text-align: left; margin: 20px 0;">
-          <p><strong>Manager:</strong> ${employee.name}</p>
-          <p><strong>Current Department:</strong> ${employee.managerDepartment || employee.department}</p>
-          <p><strong>Current Position:</strong> ${employee.position}</p>
-          <hr style="margin: 15px 0; border-color: #e5e7eb;">
-          <p style="color: #ef4444; font-weight: bold;">⚠️ Warning</p>
-          <p>This will convert the manager back to a regular employee. They will lose manager privileges.</p>
-          <p><strong>New Position:</strong> <input id="newPosition" class="swal2-input" placeholder="e.g., Senior Developer" style="width: 100%; margin-top: 10px;"></p>
-        </div>
-      `,
+      text: `Are you sure you want to demote ${employee.name} from Manager to Employee?`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Demote to Employee',
-      cancelButtonText: 'Cancel',
       confirmButtonColor: '#ef4444',
-      preConfirm: () => {
-        const newPosition = document.getElementById('newPosition').value;
-        if (!newPosition) {
-          Swal.showValidationMessage('Please enter a new position');
-          return false;
-        }
-        return newPosition;
-      }
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, demote',
+      cancelButtonText: 'Cancel',
+      customClass: { popup: 'rounded-xl' }
     }).then((result) => {
       if (result.isConfirmed) {
-        const newPosition = result.value;
-        
-        // Update employee
-        setEmployees(employees.map(emp =>
-          emp.id === employee.id
-            ? { 
-                ...emp, 
-                role: 'employee',
-                position: newPosition,
-                managerDepartment: '' // Remove manager department
-              }
-            : emp
-        ));
-        
-        // Update login account
         try {
-          const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
-          const updatedUsers = users.map(user => 
-            user.email === employee.email 
-              ? { ...user, role: 'employee' }
-              : user
+          updateUserById(employee.id, {
+            role: 'employee',
+            managerDepartment: null
+          });
+          
+          // إرسال إشعار للموظف
+          sendNotification(
+            employee.id,
+            'Role Change',
+            'Your role has been changed from Manager to Employee.',
+            'info'
           );
-          localStorage.setItem('mockUsers', JSON.stringify(updatedUsers));
+
+          loadEmployees();
           
           Swal.fire({
-            title: 'Demoted Successfully!',
-            html: `
-              <div style="text-align: left; margin: 20px 0;">
-                <p><strong>Employee:</strong> ${employee.name}</p>
-                <p><strong>New Role:</strong> Employee</p>
-                <p><strong>New Position:</strong> ${newPosition}</p>
-                <hr style="margin: 15px 0; border-color: #e5e7eb;">
-                <p style="color: #059669; font-weight: bold;">Demotion Complete</p>
-                <p>The employee has been demoted and will have regular employee privileges.</p>
-              </div>
-            `,
+            title: 'Demoted!',
+            text: `${employee.name} has been demoted to Employee.`,
             icon: 'success',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#ef4444'
+            customClass: { popup: 'rounded-xl' }
           });
         } catch (error) {
           Swal.fire({
-            title: 'Warning!',
-            text: 'Employee demoted but there was an issue updating login account.',
-            icon: 'warning',
-            confirmButtonColor: '#f59e0b'
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to demote manager.',
+            customClass: { popup: 'rounded-xl' }
           });
         }
       }
     });
   };
 
+  const handleResetPassword = (employee) => {
+    Swal.fire({
+      title: 'Reset Password',
+      text: `Enter new password for ${employee.name}:`,
+      input: 'password',
+      inputPlaceholder: 'Enter new password',
+      showCancelButton: true,
+      confirmButtonText: 'Reset',
+      cancelButtonText: 'Cancel',
+      customClass: { popup: 'rounded-xl' },
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to enter a password!';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters!';
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          resetUserPassword(employee.id, result.value);
+        
+          // إرسال إشعار للموظف
+          sendNotification(
+            employee.id,
+            'Password Reset',
+            'Your password has been reset by the administrator.',
+            'warning'
+          );
+          
+          Swal.fire({
+            title: 'Password Reset!',
+            text: 'Password has been reset successfully.',
+            icon: 'success',
+            customClass: { popup: 'rounded-xl' }
+          });
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to reset password.',
+            customClass: { popup: 'rounded-xl' }
+          });
+        }
+      }
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'inactive':
+        return 'bg-red-100 text-red-800';
+      case 'on-leave':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRoleIcon = (role) => {
+    switch(role) {
+      case 'admin':
+        return <FiShield className="w-4 h-4" />;
+      case 'manager':
+        return <FiManager className="w-4 h-4" />;
+      case 'employee':
+        return <FiUsers className="w-4 h-4" />;
+      default:
+        return <FiUsers className="w-4 h-4" />;
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch(role) {
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'manager':
+        return 'bg-blue-100 text-blue-800';
+      case 'employee':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
   return (
-    <div className="employees-container">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading employees...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="employees-header">
-        <h1 className="employees-title">Employees Management</h1>
-        <button className="add-employee-btn" onClick={handleAddEmployee}>
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Employee
-        </button>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Employees Management</h1>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>Dashboard</span>
+            <span>&gt;</span>
+            <span>Employees</span>
+          </div>
       </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FiUsers className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <FiUserCheck className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Active</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <FiCalendar className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">On Leave</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.onLeave}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <FiUserX className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Inactive</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <FiDollarSign className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Salary</p>
+                <p className="text-2xl font-bold text-gray-900">${stats.totalSalary.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
       {/* Search */}
-      <div className="search-section">
-        <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input
           type="text"
-          className="search-input"
-          placeholder="Search employees by name, email, department, or position..."
+                  placeholder="Search employees..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
 
-      {/* Statistics */}
-      <div className="stats-section">
-        <div className="stat-card">
-          <div className="stat-value">{totalEmployees}</div>
-          <div className="stat-label">Total Employees</div>
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on-leave">On Leave</option>
+              </select>
+              
+              {/* Department Filter */}
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Departments</option>
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Finance">Finance</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+                <option value="Operations">Operations</option>
+              </select>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{activeEmployees}</div>
-          <div className="stat-label">Active</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{onLeaveEmployees}</div>
-          <div className="stat-label">On Leave</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">${totalSalary.toLocaleString()}</div>
-          <div className="stat-label">Total Salary</div>
+            
+            <button
+              onClick={handleAddEmployee}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FiPlus className="w-4 h-4 mr-2" />
+              Add Employee
+            </button>
         </div>
       </div>
 
       {/* Employees Table */}
-      <div className="table-container">
-        <div className="table-header">
-          <h2 className="table-title">Employee List</h2>
-        </div>
-        <div className="table-wrapper">
-          <table className="employees-table">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Department</th>
-                <th>Position</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Salary</th>
-                <th>Hire Date</th>
-                <th>Actions</th>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Employee
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Salary
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
               </tr>
             </thead>
-            <tbody>
-              {filteredEmployees.map(employee => (
-                <tr key={employee.id}>
-                  <td>
-                    <div className="employee-info">
-                      <div className="employee-avatar">
-                        {getInitials(employee.name)}
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredEmployees.map((employee) => (
+                  <tr key={employee.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">
+                              {employee.name?.charAt(0) || 'U'}
+                            </span>
                       </div>
-                      <div className="employee-details">
-                        <h4>
-                          <Link to={`/employees/${employee.id}`} className="employee-link">
-                            {employee.name}
-                          </Link>
-                        </h4>
-                        <p>{employee.email}</p>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{employee.name}</div>
+                          <div className="text-sm text-gray-500">{employee.position}</div>
+                          <div className="flex items-center mt-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(employee.role)}`}>
+                              {getRoleIcon(employee.role)}
+                              <span className="ml-1 capitalize">{employee.role}</span>
+                            </span>
+                          </div>
                       </div>
                     </div>
                   </td>
-                  <td>{employee.department}</td>
-                  <td>{employee.position}</td>
-                  <td>
-                    <span className={`role-badge ${employee.role || 'employee'}`}>
-                      {employee.role ? employee.role.charAt(0).toUpperCase() + employee.role.slice(1) : 'Employee'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{employee.email}</div>
+                      <div className="text-sm text-gray-500">{employee.phone}</div>
+                  </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{employee.department}</div>
+                      {employee.managerDepartment && (
+                        <div className="text-xs text-blue-600">Manages: {employee.managerDepartment}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(employee.status)}`}>
+                        {employee.status}
                     </span>
                   </td>
-                  <td>
-                    <span className={`status-badge ${employee.status}`}>
-                      {employee.status.replace('-', ' ')}
-                    </span>
-                  </td>
-                  <td className="salary-amount">${employee.salary.toLocaleString()}</td>
-                  <td>{new Date(employee.hireDate).toLocaleDateString()}</td>
-                  <td>
-                    <div className="actions-buttons">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${employee.salary?.toLocaleString() || '0'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center space-x-2">
                     <button
-                        className="action-btn edit-btn"
                       onClick={() => handleEditEmployee(employee)}
-                        title="Edit Employee"
+                          className="text-blue-600 hover:text-blue-900"
                       >
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                          <FiEdit3 className="w-4 h-4" />
                       </button>
-                      {employee.role === 'employee' && (
                         <button
-                          className="action-btn promote-btn"
-                          onClick={() => handlePromoteEmployee(employee)}
-                          title="Promote to Manager"
+                          onClick={() => handleResetPassword(employee)}
+                          className="text-yellow-600 hover:text-yellow-900"
                         >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                          </svg>
+                          <FiShield className="w-4 h-4" />
+                        </button>
+                        {employee.role === 'employee' && (
+                        <button
+                            onClick={() => handlePromoteEmployee(employee)}
+                            className="text-green-600 hover:text-green-900"
+                        >
+                            <FiManager className="w-4 h-4" />
                         </button>
                       )}
                       {employee.role === 'manager' && (
                         <button
-                          className="action-btn transfer-btn"
-                          onClick={() => handleTransferManager(employee)}
-                          title="Transfer Manager"
-                        >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                          </svg>
-                        </button>
-                      )}
-                      {employee.role === 'manager' && (
-                        <button
-                          className="action-btn demote-btn"
                           onClick={() => handleDemoteManager(employee)}
-                          title="Demote to Employee"
+                            className="text-orange-600 hover:text-orange-900"
                         >
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                          </svg>
+                            <FiUsers className="w-4 h-4" />
                     </button>
                       )}
                     <button
-                        className="action-btn delete-btn"
                       onClick={() => handleDeleteEmployee(employee.id)}
-                        title="Delete Employee"
+                          className="text-red-600 hover:text-red-900"
                     >
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                          <FiTrash2 className="w-4 h-4" />
                     </button>
                     </div>
                   </td>
@@ -736,264 +723,227 @@ const Employees = () => {
         </div>
       </div>
 
-      {/* Modal */}
+        {/* Add/Edit Employee Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">
                 {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
               </h2>
             </div>
-            <form onSubmit={handleSubmit}>
+              
+              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">First Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
                     <input
                       type="text"
                       name="firstName"
-                      className="form-input"
                       value={formData.firstName}
                       onChange={handleInputChange}
                       required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Last Name</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
                   <input
                     type="text"
                       name="lastName"
-                      className="form-input"
                       value={formData.lastName}
                       onChange={handleInputChange}
                       required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                   <input
                     type="email"
                     name="email"
-                    className="form-input"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Department</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
                   <select
                       name="department"
-                      className="form-select"
                     value={formData.department}
                       onChange={handleInputChange}
-                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Department</option>
                     <option value="IT">IT</option>
                     <option value="HR">HR</option>
-                    <option value="Marketing">Marketing</option>
                     <option value="Finance">Finance</option>
+                      <option value="Marketing">Marketing</option>
                     <option value="Sales">Sales</option>
                       <option value="Operations">Operations</option>
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Position</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
                     <input
                       type="text"
                       name="position"
-                      className="form-input"
                       value={formData.position}
                       onChange={handleInputChange}
-                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Salary</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Salary</label>
                     <input
                       type="number"
                       name="salary"
-                      className="form-input"
                       value={formData.salary}
                       onChange={handleInputChange}
-                      required
-                      min="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Status</label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select
                       name="status"
-                      className="form-select"
                       value={formData.status}
                       onChange={handleInputChange}
-                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="active">Active</option>
-                      <option value="on-leave">On Leave</option>
                       <option value="inactive">Inactive</option>
+                      <option value="on-leave">On Leave</option>
                     </select>
-                  </div>
                 </div>
                 
-                {/* Role Selection */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Role</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                     <select
                       name="role"
-                      className="form-select"
                       value={formData.role}
                       onChange={handleInputChange}
-                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="employee">Employee</option>
                       <option value="manager">Manager</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </div>
+                  
                   {formData.role === 'manager' && (
-                    <div className="form-group">
-                      <label className="form-label">Manager Department</label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Manager Department</label>
                       <select
                         name="managerDepartment"
-                        className="form-select"
                         value={formData.managerDepartment}
                         onChange={handleInputChange}
-                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
-                        <option value="">Select Department to Manage</option>
-                        <option value="IT">IT Department</option>
-                        <option value="HR">HR Department</option>
-                        <option value="Marketing">Marketing Department</option>
-                        <option value="Finance">Finance Department</option>
-                        <option value="Sales">Sales Department</option>
-                        <option value="Operations">Operations Department</option>
+                        <option value="">Select Department</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Operations">Operations</option>
                   </select>
                     </div>
                   )}
-                </div>
                 
-                {!editingEmployee && (
-                  <div className="form-group">
-                    <label className="form-label">Default Password</label>
-                    <input
-                      type="text"
-                      name="password"
-                      className="form-input"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Default password for login"
-                    />
-                    <small className="form-help">This will be the employee's initial login password</small>
-                  </div>
-                )}
-                
-                {/* Additional Fields for Testing Scroll */}
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      className="form-input"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Emergency Contact</label>
-                    <input
-                      type="text"
-                      name="emergencyContact"
-                      className="form-input"
-                      placeholder="Emergency contact name"
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    className="form-input"
-                    placeholder="Full address"
-                  />
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Date of Birth</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Hire Date</label>
                     <input
                       type="date"
-                      name="dateOfBirth"
-                      className="form-input"
+                      name="hireDate"
+                      value={formData.hireDate}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Nationality</label>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Emergency Contact */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Emergency Contact</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                     <input
                       type="text"
-                      name="nationality"
-                      className="form-input"
-                      placeholder="Nationality"
+                        name="emergencyContact.name"
+                        value={formData.emergencyContact.name}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
-                  </div>
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label">Skills</label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Relationship</label>
                   <input
                     type="text"
-                    name="skills"
-                    className="form-input"
-                    placeholder="e.g., JavaScript, React, Project Management"
-                  />
-                  <small className="form-help">Enter skills separated by commas</small>
+                        name="emergencyContact.relationship"
+                        value={formData.emergencyContact.relationship}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
                 </div>
                 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Work Experience (Years)</label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                     <input
-                      type="number"
-                      name="experience"
-                      className="form-input"
-                      placeholder="5"
-                      min="0"
+                        type="tel"
+                        name="emergencyContact.phone"
+                        value={formData.emergencyContact.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Education Level</label>
-                    <select
-                      name="education"
-                      className="form-select"
-                    >
-                      <option value="">Select Education</option>
-                      <option value="high-school">High School</option>
-                      <option value="bachelor">Bachelor's Degree</option>
-                      <option value="master">Master's Degree</option>
-                      <option value="phd">PhD</option>
-                      <option value="other">Other</option>
-                    </select>
                   </div>
                 </div>
-              </div>
-              <div className="modal-actions">
+                
+                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                   <button
                     type="button"
-                  className="cancel-btn"
                   onClick={() => setShowModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
-                <button type="submit" className="submit-btn">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                   {editingEmployee ? 'Update Employee' : 'Add Employee'}
                   </button>
                 </div>
@@ -1001,6 +951,7 @@ const Employees = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

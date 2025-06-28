@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
+import { FiX } from 'react-icons/fi';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { user, hasPermission } = useAuth();
 
   const navigation = [
@@ -106,43 +107,66 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="sidebar-container">
-      <div className="sidebar-content">
-        {/* Navigation */}
-        <nav className="navigation-section">
-          {filteredNavigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                `nav-item ${isActive ? 'active' : ''}`
-              }
-            >
-              {item.icon}
-              <span className="nav-text">{item.name}</span>
-            </NavLink>
-          ))}
-        </nav>
+    <>
+      {/* Overlay for mobile */}
+      <div
+        className={`fixed inset-0 z-[9998] bg-black bg-opacity-40 transition-opacity duration-300 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+        aria-hidden={!isOpen}
+      ></div>
+      {/* Sidebar */}
+      <div
+        className={`sidebar-container
+          fixed top-0 left-0 h-full w-64 z-[9999] transition-transform duration-300
+          ${isOpen ? 'block translate-x-0' : 'hidden -translate-x-full'}
+          md:static md:w-[280px] md:block md:translate-x-0
+        `}
+        style={{ background: 'white' }}
+      >
+        {/* Close button for mobile */}
+        <div className="flex md:hidden justify-end p-3">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none" aria-label="Close sidebar">
+            <FiX className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+        <div className="sidebar-content">
+          {/* Navigation */}
+          <nav className="navigation-section">
+            {filteredNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  `nav-item ${isActive ? 'active' : ''}`
+                }
+                onClick={onClose}
+              >
+                {item.icon}
+                <span className="nav-text">{item.name}</span>
+              </NavLink>
+            ))}
+          </nav>
 
-        {/* User Info */}
-        <div className="user-section">
-          <div className="user-card">
-            <div className="user-avatar">
-              <span className="user-avatar-text">
-                {user?.name?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="user-info">
-              <p className="user-name">{user?.name}</p>
-              <p className="user-role">
-                {user?.role}
-                <span className={`role-indicator ${user?.role}`}></span>
-              </p>
+          {/* User Info */}
+          <div className="user-section">
+            <div className="user-card">
+              <div className="user-avatar">
+                <span className="user-avatar-text">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="user-info">
+                <p className="user-name">{user?.name}</p>
+                <p className="user-role">
+                  {user?.role}
+                  <span className={`role-indicator ${user?.role}`}></span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

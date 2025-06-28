@@ -1,27 +1,29 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { FiUser, FiSettings, FiCamera, FiSave, FiX, FiEdit3, FiMapPin, FiPhone, FiMail, FiCalendar, FiShield, FiUsers } from 'react-icons/fi';
 import Swal from 'sweetalert2';
+import authService from '../services/authService';
 import './Profile.css';
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('about'); // 'about' or 'skills'
-  const [rightTab, setRightTab] = useState('about'); // 'about' or 'settings'
+  const { user, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('about');
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
-  const [profileImage, setProfileImage] = useState('https://i.pravatar.cc/150?u=a042581f4e29026704d');
-
+  
+  const [profileImage, setProfileImage] = useState(user?.avatar || 'https://i.pravatar.cc/150?u=a042581f4e29026704d');
   const [formData, setFormData] = useState({
-    name: user?.name || 'Dr. John Smith',
-    email: user?.email || 'johndeo@example.com',
-    phone: '264-625-2583',
-    address: '456, Estern evenue, Courtrage area, New York',
-    bio: "Completed my graduation in Arts from the well known and renowned institution of India – SARDAR PATEL ARTS COLLEGE, BARODA in 2000-01, which was affiliated to M.S. University. I ranker in University exams from the same university from 1996-01.",
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'HTML', 'CSS'],
-    education: 'Worked as Professor and Head of the department at Sarda Collage, Rajkot, Gujarat from 2003-2015',
-    experience: '5+ years in software development',
-    department: user?.department || 'Technology',
-    position: user?.position || 'Senior Employee',
-    location: 'India',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    department: user?.department || '',
+    position: user?.position || '',
+    bio: user?.bio || '',
+    address: user?.address || '',
+    skills: user?.skills || ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'HTML', 'CSS'],
+    education: user?.education || '',
+    experience: user?.experience || '',
     oldPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -30,11 +32,33 @@ const Profile = () => {
   const [initialFormData] = useState(formData);
   const [initialProfileImage] = useState(profileImage);
 
+  // إحصائيات المستخدم
   const stats = {
-    following: 564,
-    followers: '18k',
-    posts: 565
+    projects: user?.projects?.length || 0,
+    tasks: user?.tasks?.length || 0,
+    leaves: user?.leaves?.length || 0
   };
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        department: user.department || '',
+        position: user.position || '',
+        bio: user.bio || '',
+        address: user.address || '',
+        skills: user.skills || ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'HTML', 'CSS'],
+        education: user.education || '',
+        experience: user.experience || '',
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setProfileImage(user.avatar || 'https://i.pravatar.cc/150?u=a042581f4e29026704d');
+    }
+  }, [user]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -52,196 +76,420 @@ const Profile = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      Swal.fire('Error', 'New passwords do not match!', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Password Mismatch',
+        text: 'New passwords do not match!',
+        customClass: { popup: 'rounded-xl' }
+      });
       return;
     }
-    console.log('Saving data:', formData);
-    Swal.fire('Success', 'Profile updated successfully', 'success');
-    setRightTab('about'); // Switch back to about tab
+
+    setLoading(true);
+    try {
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        department: formData.department,
+        position: formData.position,
+        bio: formData.bio,
+        address: formData.address,
+        skills: formData.skills,
+        education: formData.education,
+        experience: formData.experience,
+        avatar: profileImage
+      };
+
+      // تحديث الملف الشخصي
+      const result = await authService.updateProfile(updateData);
+      
+      // تحديث كلمة المرور إذا تم تغييرها
+      if (formData.newPassword) {
+        await authService.changePassword(formData.oldPassword, formData.newPassword);
+      }
+
+      // تحديث المستخدم في Context
+      if (updateUser) {
+        updateUser(result.user);
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Updated!',
+        text: 'Your profile has been updated successfully.',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: { popup: 'rounded-xl' }
+      });
+
+      setIsEditing(false);
+      setFormData(prev => ({
+        ...prev,
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: error.message,
+        customClass: { popup: 'rounded-xl' }
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    setFormData(initialFormData); // Revert changes
+    setFormData(initialFormData);
     setProfileImage(initialProfileImage);
-    setRightTab('about');
+    setIsEditing(false);
+  };
+
+  const getRoleIcon = (role) => {
+    switch(role) {
+      case 'admin':
+        return <FiShield className="w-5 h-5" />;
+      case 'manager':
+        return <FiUsers className="w-5 h-5" />;
+      case 'employee':
+        return <FiUser className="w-5 h-5" />;
+      default:
+        return <FiUser className="w-5 h-5" />;
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch(role) {
+      case 'admin':
+        return 'bg-gradient-to-r from-red-500 to-red-600';
+      case 'manager':
+        return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      case 'employee':
+        return 'bg-gradient-to-r from-green-500 to-green-600';
+      default:
+        return 'bg-gradient-to-r from-gray-500 to-gray-600';
+    }
   };
 
   return (
-    <div className="profile-page-container">
-      <div className="profile-page-header">
-        <h1 className="profile-page-title">Profile</h1>
-        <div className="breadcrumbs">
-          <span>Employees</span> &gt; <span>Profile</span>
-        </div>
-      </div>
-
-      <div className="profile-page-content">
-        {/* Left Column */}
-        <div className="profile-left-column">
-          <div className="profile-card-dark">
-            <div className="profile-avatar-container">
-              <img src={profileImage} alt="Profile" className="profile-avatar-img" />
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleImageChange} 
-                style={{ display: 'none' }} 
-                accept="image/*"
-              />
-              <button className="change-avatar-btn" onClick={() => fileInputRef.current.click()}>
-                <i className="fas fa-camera"></i>
-              </button>
-            </div>
-            <h2 className="profile-card-name">{formData.name}</h2>
-            <p className="profile-card-role">{formData.position}</p>
-            <div className="profile-contact-info">
-              <p><i className="fas fa-map-marker-alt"></i> {formData.address}</p>
-              <p><i className="fas fa-phone-alt"></i> {formData.phone}</p>
-            </div>
-            <div className="profile-card-stats">
-              <div className="stat-item">
-                <span className="stat-value">{stats.following}</span>
-                <span className="stat-label">Following</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">{stats.followers}</span>
-                <span className="stat-label">Followers</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">{stats.posts}</span>
-                <span className="stat-label">Post</span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>Dashboard</span>
+            <span>&gt;</span>
+            <span>Profile</span>
           </div>
-          <div className="profile-tabs-card">
-            <div className="tabs-nav">
-              <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
-                About
-              </button>
-              <button className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>
-                Skills
-              </button>
-            </div>
-            <div className="tab-content">
-              {activeTab === 'about' && (
-                <p>{formData.bio}</p>
-              )}
-              {activeTab === 'skills' && (
-                <div className="skills-grid">
-                  {formData.skills.map(skill => (
-                    <span key={skill} className="skill-badge">{skill}</span>
-                  ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Profile Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {/* Profile Image */}
+              <div className="relative mb-6">
+                <div className="w-32 h-32 mx-auto relative">
+                  <img 
+                    src={profileImage} 
+                    alt="Profile" 
+                    className="w-full h-full rounded-full object-cover border-4 border-gray-200"
+                  />
+                  <button 
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
+                  >
+                    <FiCamera className="w-4 h-4" />
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleImageChange} 
+                    className="hidden" 
+                    accept="image/*"
+                  />
                 </div>
-              )}
+              </div>
+
+              {/* User Info */}
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{formData.name}</h2>
+                <p className="text-gray-600 mb-3">{formData.position}</p>
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white ${getRoleColor(user?.role)}`}>
+                  {getRoleIcon(user?.role)}
+                  <span className="ml-1 capitalize">{user?.role}</span>
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-gray-600">
+                  <FiMail className="w-4 h-4 mr-3" />
+                  <span className="text-sm">{formData.email}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FiPhone className="w-4 h-4 mr-3" />
+                  <span className="text-sm">{formData.phone}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FiMapPin className="w-4 h-4 mr-3" />
+                  <span className="text-sm">{formData.address}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FiCalendar className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Joined {user?.hireDate}</span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 py-4 border-t border-gray-200">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-gray-900">{stats.projects}</div>
+                  <div className="text-xs text-gray-600">Projects</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-gray-900">{stats.tasks}</div>
+                  <div className="text-xs text-gray-600">Tasks</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-gray-900">{stats.leaves}</div>
+                  <div className="text-xs text-gray-600">Leaves</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Skills Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {formData.skills.map(skill => (
+                  <span key={skill} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Column */}
-        <div className="profile-right-column">
-          <div className="profile-details-card">
-            <div className="details-card-header">
-              <button 
-                className={`details-tab-btn ${rightTab === 'about' ? 'active' : ''}`}
-                onClick={() => setRightTab('about')}
-              >
-                <i className="fas fa-user"></i> About Me
-              </button>
-              <button 
-                className={`details-tab-btn ${rightTab === 'settings' ? 'active' : ''}`}
-                onClick={() => setRightTab('settings')}
-              >
-                <i className="fas fa-cog"></i> Settings
-              </button>
-            </div>
-            <div className="details-card-body">
-              {rightTab === 'about' && (
-                <>
-                  <h3 className="section-heading">About</h3>
-                  <div className="info-grid">
-                    <div className="info-item">
-                      <span className="info-label">Full Name</span>
-                      <span className="info-value">{formData.name}</span>
+          {/* Right Column - Details */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              {/* Tabs */}
+              <div className="border-b border-gray-200">
+                <div className="flex">
+                  <button 
+                    className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === 'about' 
+                        ? 'border-blue-500 text-blue-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setActiveTab('about')}
+                  >
+                    <FiUser className="w-4 h-4 mr-2" />
+                    About
+                  </button>
+                  <button 
+                    className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === 'settings' 
+                        ? 'border-blue-500 text-blue-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    <FiSettings className="w-4 h-4 mr-2" />
+                    Settings
+                  </button>
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-6">
+                {activeTab === 'about' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-gray-900">About Me</h3>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        <FiEdit3 className="w-4 h-4 mr-1" />
+                        Edit
+                      </button>
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">Mobile</span>
-                      <span className="info-value">{formData.phone}</span>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className={`w-full px-3 py-2 border rounded-lg ${
+                            isEditing 
+                              ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className={`w-full px-3 py-2 border rounded-lg ${
+                            isEditing 
+                              ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className={`w-full px-3 py-2 border rounded-lg ${
+                            isEditing 
+                              ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <input
+                          type="text"
+                          name="department"
+                          value={formData.department}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className={`w-full px-3 py-2 border rounded-lg ${
+                            isEditing 
+                              ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                              : 'border-gray-200 bg-gray-50'
+                          }`}
+                        />
+                      </div>
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">Email</span>
-                      <span className="info-value">{formData.email}</span>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                      <textarea
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        rows={4}
+                        className={`w-full px-3 py-2 border rounded-lg ${
+                          isEditing 
+                            ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                            : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">Location</span>
-                      <span className="info-value">{formData.location}</span>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                      <textarea
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        rows={2}
+                        className={`w-full px-3 py-2 border rounded-lg ${
+                          isEditing 
+                            ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500' 
+                            : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
+                    </div>
+
+                    {isEditing && (
+                      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button
+                          onClick={handleCancel}
+                          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={loading}
+                          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        >
+                          {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'settings' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                        <input
+                          type="password"
+                          name="oldPassword"
+                          value={formData.oldPassword}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter current password"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={formData.newPassword}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter new password"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Confirm new password"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-gray-200">
+                      <button
+                        onClick={handleSave}
+                        disabled={loading || !formData.newPassword}
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      >
+                        {loading ? 'Updating...' : 'Update Password'}
+                      </button>
                     </div>
                   </div>
-                  <p className="bio-text">{formData.bio}</p>
-                  <p className="bio-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-                  
-                  <h3 className="section-heading">Education</h3>
-                  <p className="bio-text">{formData.education}</p>
-                </>
-              )}
-
-              {rightTab === 'settings' && (
-                <form className="profile-settings-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                  <h3 className="section-heading">Edit Profile Information</h3>
-                  <div className="settings-form-grid">
-                    <div className="form-group">
-                      <label className="form-label">Full Name</label>
-                      <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Email</label>
-                      <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="form-input" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Phone</label>
-                      <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className="form-input" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Location</label>
-                      <input type="text" name="location" value={formData.location} onChange={handleInputChange} className="form-input" />
-                    </div>
-                    <div className="form-group full-width">
-                      <label className="form-label">Address</label>
-                      <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-input" />
-                    </div>
-                     <div className="form-group full-width">
-                      <label className="form-label">Bio</label>
-                      <textarea name="bio" value={formData.bio} onChange={handleInputChange} className="form-textarea" rows="4"></textarea>
-                    </div>
-                    <div className="form-group full-width">
-                      <label className="form-label">Education</label>
-                      <input type="text" name="education" value={formData.education} onChange={handleInputChange} className="form-input" />
-                    </div>
-                  </div>
-
-                  <h3 className="section-heading">Change Password</h3>
-                  <div className="settings-form-grid">
-                    <div className="form-group">
-                      <label className="form-label">Old Password</label>
-                      <input type="password" name="oldPassword" value={formData.oldPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">New Password</label>
-                      <input type="password" name="newPassword" value={formData.newPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
-                    </div>
-                     <div className="form-group">
-                      <label className="form-label">Confirm New Password</label>
-                      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className="form-input" placeholder="********" />
-                    </div>
-                  </div>
-
-                  <div className="form-actions">
-                    <button type="button" className="form-btn btn-secondary" onClick={handleCancel}>Cancel</button>
-                    <button type="submit" className="form-btn btn-primary">Save Changes</button>
-                  </div>
-                </form>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

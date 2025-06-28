@@ -1,0 +1,381 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@company.com",
+      "phone": "+1-555-0123",
+      "department": "IT",
+      "position": "Senior Developer",
+      "salary": 85000,
+      "hireDate": "2022-03-15",
+      "status": "active",
+      "manager": "Sarah Johnson",
+      "emergencyContact": {
+        "name": "Jane Smith",
+        "relationship": "Spouse",
+        "phone": "+1-555-0124"
+      },
+      "performance": {
+        "rating": 4.5,
+        "lastReview": "2024-01-15",
+        "nextReview": "2024-07-15"
+      },
+      "attendance": {
+        "presentDays": 95,
+        "absentDays": 3,
+        "lateDays": 2
+      }
+    },
+    {
+      "id": 2,
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "email": "sarah.johnson@company.com",
+      "phone": "+1-555-0125",
+      "department": "IT",
+      "position": "IT Manager",
+      "salary": 95000,
+      "hireDate": "2021-06-10",
+      "status": "active",
+      "manager": "Mike Wilson",
+      "emergencyContact": {
+        "name": "Tom Johnson",
+        "relationship": "Spouse",
+        "phone": "+1-555-0126"
+      },
+      "performance": {
+        "rating": 4.8,
+        "lastReview": "2024-01-20",
+        "nextReview": "2024-07-20"
+      },
+      "attendance": {
+        "presentDays": 98,
+        "absentDays": 1,
+        "lateDays": 1
+      }
+    },
+    {
+      "id": 3,
+      "firstName": "Mike",
+      "lastName": "Wilson",
+      "email": "mike.wilson@company.com",
+      "phone": "+1-555-0127",
+      "department": "Marketing",
+      "position": "Marketing Manager",
+      "salary": 90000,
+      "hireDate": "2020-09-22",
+      "status": "active",
+      "manager": "Emily Brown",
+      "emergencyContact": {
+        "name": "Lisa Wilson",
+        "relationship": "Spouse",
+        "phone": "+1-555-0128"
+      },
+      "performance": {
+        "rating": 4.2,
+        "lastReview": "2024-01-10",
+        "nextReview": "2024-07-10"
+      },
+      "attendance": {
+        "presentDays": 92,
+        "absentDays": 5,
+        "lateDays": 3
+      }
+    },
+    {
+      "id": 4,
+      "firstName": "Emily",
+      "lastName": "Brown",
+      "email": "emily.brown@company.com",
+      "phone": "+1-555-0129",
+      "department": "Finance",
+      "position": "Finance Manager",
+      "salary": 88000,
+      "hireDate": "2021-01-15",
+      "status": "active",
+      "manager": "David Lee",
+      "emergencyContact": {
+        "name": "Robert Brown",
+        "relationship": "Spouse",
+        "phone": "+1-555-0130"
+      },
+      "performance": {
+        "rating": 4.6,
+        "lastReview": "2024-01-25",
+        "nextReview": "2024-07-25"
+      },
+      "attendance": {
+        "presentDays": 96,
+        "absentDays": 2,
+        "lateDays": 2
+      }
+    },
+    {
+      "id": 5,
+      "firstName": "David",
+      "lastName": "Lee",
+      "email": "david.lee@company.com",
+      "phone": "+1-555-0131",
+      "department": "Sales",
+      "position": "Sales Manager",
+      "salary": 92000,
+      "hireDate": "2019-11-08",
+      "status": "active",
+      "manager": "Lisa Davis",
+      "emergencyContact": {
+        "name": "Anna Lee",
+        "relationship": "Spouse",
+        "phone": "+1-555-0132"
+      },
+      "performance": {
+        "rating": 4.4,
+        "lastReview": "2024-01-05",
+        "nextReview": "2024-07-05"
+      },
+      "attendance": {
+        "presentDays": 94,
+        "absentDays": 4,
+        "lateDays": 2
+      }
+    }
+  ],
+  "departments": [
+    {
+      "id": 1,
+      "name": "Information Technology",
+      "code": "IT",
+      "manager": "Sarah Johnson",
+      "employeeCount": 45,
+      "budget": 1200000,
+      "status": "active",
+      "description": "Handles all technology infrastructure and software development",
+      "color": "bg-gradient-to-br from-blue-500 to-indigo-600"
+    },
+    {
+      "id": 2,
+      "name": "Human Resources",
+      "code": "HR",
+      "manager": "Jennifer Adams",
+      "employeeCount": 25,
+      "budget": 800000,
+      "status": "active",
+      "description": "Manages employee relations, recruitment, and organizational development",
+      "color": "bg-gradient-to-br from-green-500 to-emerald-600"
+    },
+    {
+      "id": 3,
+      "name": "Marketing",
+      "code": "MKT",
+      "manager": "Mike Wilson",
+      "employeeCount": 30,
+      "budget": 950000,
+      "status": "active",
+      "description": "Handles brand management, advertising, and market research",
+      "color": "bg-gradient-to-br from-purple-500 to-pink-600"
+    },
+    {
+      "id": 4,
+      "name": "Finance",
+      "code": "FIN",
+      "manager": "Emily Brown",
+      "employeeCount": 20,
+      "budget": 700000,
+      "status": "active",
+      "description": "Manages financial planning, accounting, and budget control",
+      "color": "bg-gradient-to-br from-yellow-500 to-orange-600"
+    },
+    {
+      "id": 5,
+      "name": "Sales",
+      "code": "SLS",
+      "manager": "David Lee",
+      "employeeCount": 35,
+      "budget": 1100000,
+      "status": "active",
+      "description": "Handles customer acquisition, sales operations, and revenue generation",
+      "color": "bg-gradient-to-br from-red-500 to-rose-600"
+    },
+    {
+      "id": 6,
+      "name": "Operations",
+      "code": "OPS",
+      "manager": "Lisa Davis",
+      "employeeCount": 1,
+      "budget": 500000,
+      "status": "inactive",
+      "description": "Manages day-to-day operations and process optimization",
+      "color": "bg-gradient-to-br from-gray-500 to-slate-600"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Website Redesign",
+      "description": "Complete redesign of company website with modern UI/UX",
+      "department": "IT",
+      "manager": "Sarah Johnson",
+      "startDate": "2024-01-15",
+      "endDate": "2024-06-30",
+      "status": "in-progress",
+      "priority": "high",
+      "budget": 50000,
+      "teamMembers": ["John Smith", "Alex Chen", "Maria Garcia"],
+      "progress": 65
+    },
+    {
+      "id": 2,
+      "name": "Marketing Campaign Q1",
+      "description": "Digital marketing campaign for Q1 product launch",
+      "department": "Marketing",
+      "manager": "Mike Wilson",
+      "startDate": "2024-01-01",
+      "endDate": "2024-03-31",
+      "status": "completed",
+      "priority": "medium",
+      "budget": 25000,
+      "teamMembers": ["Mike Wilson", "Jessica Kim", "Tom Anderson"],
+      "progress": 100
+    },
+    {
+      "id": 3,
+      "name": "HR System Implementation",
+      "description": "Implementation of new HR management system",
+      "department": "HR",
+      "manager": "Jennifer Adams",
+      "startDate": "2024-02-01",
+      "endDate": "2024-08-31",
+      "status": "in-progress",
+      "priority": "high",
+      "budget": 75000,
+      "teamMembers": ["Jennifer Adams", "Robert Taylor", "Lisa Chen"],
+      "progress": 30
+    }
+  ],
+  "reports": [
+    {
+      "id": 1,
+      "name": "Employee Distribution Report",
+      "type": "employee",
+      "status": "completed",
+      "generatedAt": "2024-01-15",
+      "generatedBy": "Admin User",
+      "fileSize": "2.3 MB",
+      "downloads": 45
+    },
+    {
+      "id": 2,
+      "name": "Salary Analysis Q4 2023",
+      "type": "financial",
+      "status": "completed",
+      "generatedAt": "2024-01-10",
+      "generatedBy": "HR Manager",
+      "fileSize": "1.8 MB",
+      "downloads": 32
+    },
+    {
+      "id": 3,
+      "name": "Performance Metrics Report",
+      "type": "performance",
+      "status": "pending",
+      "generatedAt": "2024-01-12",
+      "generatedBy": "Admin User",
+      "fileSize": "3.1 MB",
+      "downloads": 0
+    },
+    {
+      "id": 4,
+      "name": "Department Budget Report",
+      "type": "department",
+      "status": "failed",
+      "generatedAt": "2024-01-08",
+      "generatedBy": "Finance Manager",
+      "fileSize": "1.5 MB",
+      "downloads": 18
+    },
+    {
+      "id": 5,
+      "name": "Attendance Analysis Report",
+      "type": "attendance",
+      "status": "completed",
+      "generatedAt": "2024-01-05",
+      "generatedBy": "HR Manager",
+      "fileSize": "2.1 MB",
+      "downloads": 28
+    }
+  ],
+  "attendance": [
+    {
+      "id": 1,
+      "employeeId": 1,
+      "date": "2024-01-15",
+      "checkIn": "09:00",
+      "checkOut": "17:30",
+      "status": "present",
+      "lateMinutes": 0
+    },
+    {
+      "id": 2,
+      "employeeId": 2,
+      "date": "2024-01-15",
+      "checkIn": "08:45",
+      "checkOut": "17:15",
+      "status": "present",
+      "lateMinutes": 0
+    },
+    {
+      "id": 3,
+      "employeeId": 3,
+      "date": "2024-01-15",
+      "checkIn": "09:15",
+      "checkOut": "17:45",
+      "status": "late",
+      "lateMinutes": 15
+    }
+  ],
+  "leaves": [
+    {
+      "id": 1,
+      "employeeId": 1,
+      "type": "vacation",
+      "startDate": "2024-02-01",
+      "endDate": "2024-02-05",
+      "status": "approved",
+      "reason": "Family vacation",
+      "approvedBy": "Sarah Johnson"
+    },
+    {
+      "id": 2,
+      "employeeId": 2,
+      "type": "sick",
+      "startDate": "2024-01-20",
+      "endDate": "2024-01-22",
+      "status": "approved",
+      "reason": "Medical appointment",
+      "approvedBy": "Jennifer Adams"
+    }
+  ],
+  "performance": [
+    {
+      "id": 1,
+      "employeeId": 1,
+      "rating": 4.5,
+      "reviewDate": "2024-01-15",
+      "reviewer": "Sarah Johnson",
+      "comments": "Excellent work on the website redesign project. Shows great technical skills and leadership.",
+      "goals": ["Complete advanced React certification", "Lead 2 more projects"],
+      "nextReview": "2024-07-15"
+    },
+    {
+      "id": 2,
+      "employeeId": 2,
+      "rating": 4.8,
+      "reviewDate": "2024-01-20",
+      "reviewer": "Mike Wilson",
+      "comments": "Outstanding performance as IT Manager. Team productivity has increased significantly.",
+      "goals": ["Implement new development processes", "Reduce system downtime by 20%"],
+      "nextReview": "2024-07-20"
+    }
+  ]
+} 

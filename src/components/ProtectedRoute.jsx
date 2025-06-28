@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole = null, requiredRoles = [] }) => {
-  const { isAuthenticated, user, hasPermission, hasAnyPermission } = useAuth();
+  const { isAuthenticated, user, hasPermission, hasRole } = useAuth();
 
   // If user is not authenticated
   if (!isAuthenticated) {
@@ -13,9 +13,9 @@ const ProtectedRoute = ({ children, requiredRole = null, requiredRoles = [] }) =
   let hasAccess = true;
 
   if (requiredRole) {
-    hasAccess = hasPermission(requiredRole);
+    hasAccess = hasRole(requiredRole);
   } else if (requiredRoles.length > 0) {
-    hasAccess = hasAnyPermission(requiredRoles);
+    hasAccess = requiredRoles.some(role => hasRole(role));
   }
 
   // If user doesn't have permission

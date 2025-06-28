@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 // Mock users data (fallback for development)
 const initialMockUsers = [
@@ -45,6 +45,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [useMockData, setUseMockData] = useState(true); // Toggle between mock and real API
   
   // Get mock users from localStorage or use initial data
@@ -76,170 +77,241 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
-  // Check for saved user on app load
+  // التحقق من حالة المصادقة عند تحميل التطبيق
   useEffect(() => {
     const initializeAuth = async () => {
-    const savedUser = localStorage.getItem('user');
-    const savedToken = localStorage.getItem('token');
-    
-    if (savedUser && savedToken) {
-        if (useMockData) {
-          // Use mock data
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
+      try {
+        setLoading(true);
+        const authResult = await authService.checkAuth();
+        
+        if (authResult.isAuthenticated) {
+          setUser(authResult.user);
+          setIsAuthenticated(true);
         } else {
-          // Verify token with backend
-          try {
-            const isValid = await authService.verifyToken();
-            if (isValid) {
-              const currentUser = await authService.getCurrentUser();
-              setUser(currentUser);
-              setIsAuthenticated(true);
-            } else {
-              // Token invalid, clear storage
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-            }
-          } catch (error) {
-            console.error('Token verification failed:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          }
+          // مسح البيانات إذا لم تكن المصادقة صحيحة
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+          setIsAuthenticated(false);
         }
-    }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
     };
 
     initializeAuth();
-  }, [useMockData]);
+  }, []);
 
-  // Login function
+  // تسجيل الدخول
   const login = async (email, password) => {
     try {
-      if (useMockData) {
-        // Mock login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      const result = await authService.login(email, password);
       
-        const users = getMockUsers();
-        const foundUser = users.find(
-        user => user.email === email && user.password === password
-      );
-      
-      if (!foundUser) {
-        throw new Error('Invalid credentials');
-      }
-      
-      const token = `mock_token_${foundUser.id}_${Date.now()}`;
-      const userData = {
-        id: foundUser.id,
-        name: foundUser.name,
-        email: foundUser.email,
-        role: foundUser.role,
-        department: foundUser.department,
-        position: foundUser.position
-      };
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setUser(userData);
+      setUser(result.user);
       setIsAuthenticated(true);
       
-      return { success: true, user: userData };
-      } else {
-        // Real API login
-        const result = await authService.login(email, password);
-        setUser(result.user);
-        setIsAuthenticated(true);
-        return result;
-      }
+      return result;
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Logout function
+  // تسجيل الخروج
   const logout = async () => {
     try {
-      if (!useMockData) {
-        await authService.logout();
-      } else {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-      }
+      setLoading(true);
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-    setUser(null);
-    setIsAuthenticated(false);
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
     }
   };
 
-  // Update user profile
-  const updateProfile = async (userData) => {
+  // تحديث الملف الشخصي
+  const updateUser = async (userData) => {
     try {
-      if (useMockData) {
-        // Mock update
-        const updatedUser = { ...user, ...userData };
+      setLoading(true);
+      const result = await authService.updateProfile(userData);
+      
+      setUser(result.user);
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // تغيير كلمة المرور
+  const changePassword = async (oldPassword, newPassword) => {
+    try {
+      setLoading(true);
+      const result = await authService.changePassword(oldPassword, newPassword);
+      
+      // تحديث المستخدم إذا تم تغيير كلمة المرور بنجاح
+      if (result.success) {
+        const updatedUser = { ...user, password: newPassword };
+        setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        return updatedUser;
-      } else {
-        // Real API update
-        const updatedUser = await authService.updateProfile(userData);
-        setUser(updatedUser);
-        return updatedUser;
       }
+      
+      return result;
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Change password
-  const changePassword = async (currentPassword, newPassword) => {
-    try {
-      if (useMockData) {
-        // Mock password change
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return { success: true, message: 'Password changed successfully' };
-      } else {
-        // Real API password change
-        return await authService.changePassword(currentPassword, newPassword);
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Forgot password
+  // إعادة تعيين كلمة المرور
   const forgotPassword = async (email) => {
     try {
-      if (useMockData) {
-        // Mock forgot password
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return { success: true, message: 'Reset email sent successfully' };
-      } else {
-        // Real API forgot password
-        return await authService.forgotPassword(email);
-      }
+      setLoading(true);
+      const result = await authService.forgotPassword(email);
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // التحقق من الصلاحيات
+  const hasPermission = (permission) => {
+    return authService.hasPermission(permission);
+  };
+
+  // التحقق من الدور
+  const hasRole = (role) => {
+    return authService.hasRole(role);
+  };
+
+  // الحصول على المستخدم الحالي
+  const getCurrentUser = () => {
+    return authService.getCurrentUser();
+  };
+
+  // إضافة مستخدم جديد (للمطورين)
+  const addUser = (userData) => {
+    try {
+      const newUser = authService.createUser(userData);
+      return newUser;
     } catch (error) {
       throw error;
     }
   };
 
-  // Check permissions
-  const hasPermission = (requiredRole) => {
-    if (!user) return false;
-    // Admin has all permissions.
-    if (user.role === 'admin') return true;
-    return user.role === requiredRole;
+  // تحديث مستخدم (للمطورين)
+  const updateUserById = (id, userData) => {
+    try {
+      const updatedUser = authService.updateUser(id, userData);
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
   };
 
-  // Check multiple permissions
-  const hasAnyPermission = (requiredRoles) => {
-    if (!user) return false;
-    // Admin has all permissions.
-    if (user.role === 'admin') return true;
-    return requiredRoles.includes(user.role);
+  // حذف مستخدم (للمطورين)
+  const deleteUser = (id) => {
+    try {
+      const result = authService.deleteUser(id);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // إعادة تعيين كلمة مرور مستخدم (للمطورين)
+  const resetUserPassword = (id, newPassword) => {
+    try {
+      const result = authService.resetUserPassword(id, newPassword);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // الحصول على إحصائيات المستخدمين
+  const getUserStats = () => {
+    return authService.getUserStats();
+  };
+
+  // الحصول على جميع المستخدمين
+  const getAllUsers = () => {
+    return authService.getAllUsers();
+  };
+
+  // إرسال إشعار
+  const sendNotification = (userId, title, message, type) => {
+    try {
+      // في التطبيق الحقيقي، سيتم استخدام notificationsAPI
+      const notification = {
+        id: Date.now(),
+        userId,
+        title,
+        message,
+        type,
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+
+      // حفظ الإشعار في localStorage (في التطبيق الحقيقي سيتم حفظه في قاعدة البيانات)
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      notifications.push(notification);
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+
+      return notification;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // الحصول على إشعارات المستخدم
+  const getUserNotifications = (userId) => {
+    try {
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      return notifications.filter(n => n.userId === userId);
+    } catch (error) {
+      return [];
+    }
+  };
+
+  // تحديث حالة قراءة الإشعار
+  const markNotificationAsRead = (notificationId) => {
+    try {
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      const updatedNotifications = notifications.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      );
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  // تحديث جميع إشعارات المستخدم كمقروءة
+  const markAllNotificationsAsRead = (userId) => {
+    try {
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      const updatedNotifications = notifications.map(n => 
+        n.userId === userId ? { ...n, read: true } : n
+      );
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
   // Toggle between mock and real API
@@ -264,14 +336,26 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     isAuthenticated,
+    loading,
     useMockData,
     login,
     logout,
-    updateProfile,
+    updateUser,
     changePassword,
     forgotPassword,
     hasPermission,
-    hasAnyPermission,
+    hasRole,
+    getCurrentUser,
+    addUser,
+    updateUserById,
+    deleteUser,
+    resetUserPassword,
+    getUserStats,
+    getAllUsers,
+    sendNotification,
+    getUserNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
     toggleMockData,
     addMockUser,
     getMockUsersList,
