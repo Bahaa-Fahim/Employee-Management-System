@@ -1,181 +1,283 @@
-# Employee Management System
+# 🏢 Employee Management System
 
-A modern, responsive employee management system built with React, Tailwind CSS, and Vite.
+A comprehensive employee management system built with React, featuring detailed views, JSON Server API, and modern UI design.
 
-## 🚀 Features
+## ✨ Features
 
-- **Modern UI/UX**: Beautiful glassmorphism design with smooth animations
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **User Authentication**: Secure login system with role-based access
-- **Employee Management**: Add, edit, delete, and search employees
-- **Department Management**: Organize employees by departments
-- **Reports & Analytics**: Generate comprehensive reports and analytics
-- **Profile Management**: User profile customization and settings
-- **Real-time Updates**: Live data updates and notifications
+### 🔐 Authentication & Authorization
+- **Multi-role system**: Admin, Manager, Employee
+- **Secure login/logout**
+- **Role-based access control**
+- **Protected routes**
 
-## 🛠️ Tech Stack
+### 👥 Employee Management
+- **Complete CRUD operations**
+- **Detailed employee profiles**
+- **Performance tracking**
+- **Attendance monitoring**
+- **Salary management**
+- **Role promotion/demotion**
 
-- **Frontend**: React 19, Vite
-- **Styling**: Tailwind CSS 4
-- **Routing**: React Router DOM
-- **Icons**: Heroicons (SVG)
-- **Notifications**: SweetAlert2
-- **Deployment**: GitHub Pages
+### 🏢 Department Management
+- **Department overview**
+- **Employee distribution**
+- **Budget tracking**
+- **Manager assignment**
 
-## 📦 Installation
+### 📊 Project Management
+- **Project creation and tracking**
+- **Team assignment**
+- **Progress monitoring**
+- **Timeline management**
 
-1. Clone the repository:
+### 📈 Reports & Analytics
+- **Dashboard statistics**
+- **Performance reports**
+- **Department analytics**
+- **Export functionality**
+
+### 🎨 Modern UI/UX
+- **Responsive design**
+- **Dark/Light themes**
+- **Interactive charts**
+- **Real-time updates**
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-git clone https://github.com/[YOUR_USERNAME]/Employee-Management.git
+git clone <repository-url>
 cd Employee-Management
 ```
 
-2. Install dependencies:
+2. **Install dependencies**
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. **Set up environment variables**
 ```bash
-npm run dev
+cp env.example .env
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+4. **Start the development servers**
+```bash
+# Start both JSON Server and React app
+npm run dev:full
+
+# Or start them separately:
+npm run server    # JSON Server on port 3001
+npm run dev       # React app on port 5173
+```
+
+5. **Access the application**
+- Frontend: http://localhost:5173
+- API: http://localhost:3001
 
 ## 🔧 Configuration
 
-### For GitHub Pages Deployment
-
-1. Update the `homepage` field in `package.json`:
-```json
-"homepage": "https://[YOUR_USERNAME].github.io/Employee-Management"
-```
-
-2. Install gh-pages package:
+### Environment Variables
 ```bash
-npm install --save-dev gh-pages
+# Backend API Configuration
+VITE_API_URL=http://localhost:3001
+
+# App Configuration
+VITE_APP_TITLE=Employee Management System
+VITE_APP_VERSION=1.0.0
+
+# Feature Flags
+VITE_ENABLE_MOCK_DATA=false
+VITE_ENABLE_ANALYTICS=false
+
+# Development Settings
+VITE_DEBUG_MODE=true
+VITE_LOG_LEVEL=info
 ```
 
-3. Deploy to GitHub Pages:
+### Default Login Credentials
+```
+Admin:
+- Email: admin@company.com
+- Password: admin123
+
+Manager:
+- Email: manager@company.com
+- Password: manager123
+
+Employee:
+- Email: employee@company.com
+- Password: employee123
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+├── context/            # React context providers
+├── pages/              # Page components
+│   ├── EmployeeDetails.jsx    # Detailed employee view
+│   ├── DepartmentDetails.jsx  # Detailed department view
+│   ├── ProjectDetails.jsx     # Detailed project view
+│   └── ...
+├── services/           # API services
+├── utils/              # Utility functions
+└── assets/             # Static assets
+```
+
+## 🔗 API Endpoints
+
+### Authentication
+- `POST /auth/login` - User login
+- `POST /auth/logout` - User logout
+- `GET /auth/me` - Get current user
+
+### Employees
+- `GET /employees` - Get all employees
+- `GET /employees/:id` - Get employee details
+- `POST /employees` - Create employee
+- `PUT /employees/:id` - Update employee
+- `DELETE /employees/:id` - Delete employee
+
+### Departments
+- `GET /departments` - Get all departments
+- `GET /departments/:id` - Get department details
+- `POST /departments` - Create department
+- `PUT /departments/:id` - Update department
+- `DELETE /departments/:id` - Delete department
+
+### Projects
+- `GET /projects` - Get all projects
+- `GET /projects/:id` - Get project details
+- `POST /projects` - Create project
+- `PUT /projects/:id` - Update project
+- `DELETE /projects/:id` - Delete project
+
+## 🎯 Key Features
+
+### 📋 Detailed Views
+- **Employee Details**: Complete profile with performance, attendance, and personal info
+- **Department Details**: Overview with employee list and budget information
+- **Project Details**: Timeline, team members, and progress tracking
+
+### 🔄 Real-time Updates
+- **JSON Server**: Provides real-time API with automatic data persistence
+- **Live Updates**: Changes reflect immediately across the application
+- **Data Persistence**: All data is saved to `db.json` file
+
+### 📱 Responsive Design
+- **Mobile-friendly**: Works perfectly on all device sizes
+- **Modern UI**: Clean, professional interface
+- **Accessibility**: WCAG compliant design
+
+## 🛠️ Development
+
+### Available Scripts
 ```bash
-npm run deploy
+npm run dev          # Start React development server
+npm run server       # Start JSON Server
+npm run dev:full     # Start both servers concurrently
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
 ```
 
-## 👥 Demo Accounts
+### Adding New Features
+1. Create new components in `src/components/`
+2. Add new pages in `src/pages/`
+3. Update API services in `src/services/`
+4. Add routes in `src/App.jsx`
+5. Update navigation in `src/components/Sidebar.jsx`
 
-### Admin Account
-- **Email**: admin@company.com
-- **Password**: admin123
+## 📊 Data Structure
 
-### Manager Account
-- **Email**: manager@company.com
-- **Password**: manager123
+### Employee Model
+```javascript
+{
+  id: number,
+  firstName: string,
+  lastName: string,
+  email: string,
+  phone: string,
+  department: string,
+  position: string,
+  salary: number,
+  hireDate: Date,
+  status: 'active' | 'inactive' | 'on-leave',
+  role: 'admin' | 'manager' | 'employee',
+  performance: {
+    rating: number,
+    lastReview: Date,
+    nextReview: Date,
+    comments: string
+  },
+  attendance: {
+    presentDays: number,
+    absentDays: number,
+    lateDays: number
+  }
+}
+```
 
-### Employee Account
-- **Email**: employee@company.com
-- **Password**: employee123
-
-## 📱 Pages
-
-- **Dashboard**: Overview with statistics and quick actions
-- **Employees**: Manage employee information and data
-- **Departments**: Organize and manage departments
-- **Reports**: Generate and view analytics reports
-- **Profile**: User profile and personal settings
-- **Settings**: System configuration and preferences
-
-## 🎨 Design Features
-
-- **Glassmorphism Effects**: Modern glass-like UI elements
-- **Gradient Backgrounds**: Beautiful color gradients
-- **Smooth Animations**: Hover effects and transitions
-- **Responsive Layout**: Adaptive design for all screen sizes
-- **Dark/Light Themes**: Theme customization options
-- **Interactive Elements**: Engaging user interface components
-
-## 🔒 Security Features
-
-- **Role-based Access Control**: Different permissions for different roles
-- **Session Management**: Secure user sessions
-- **Input Validation**: Form validation and sanitization
-- **Protected Routes**: Secure page access
-
-## 📊 Features by Role
-
-### Admin
-- Full access to all features
-- Manage all employees and departments
-- Generate and view all reports
-- System settings and configuration
-
-### Manager
-- View and manage team members
-- Generate team reports
-- Limited department access
-- Profile and personal settings
-
-### Employee
-- View personal information
-- Update profile details
-- Limited system access
-- Personal settings only
+### Department Model
+```javascript
+{
+  id: number,
+  name: string,
+  code: string,
+  manager: string,
+  employeeCount: number,
+  budget: number,
+  status: 'active' | 'inactive',
+  description: string,
+  color: string
+}
+```
 
 ## 🚀 Deployment
 
-### GitHub Pages
+### Build for Production
+```bash
+npm run build
+```
 
-1. Push your code to GitHub
-2. Update the homepage URL in `package.json`
-3. Run the deploy command:
+### Deploy to GitHub Pages
 ```bash
 npm run deploy
 ```
 
-4. Configure GitHub Pages in your repository settings:
-   - Go to Settings > Pages
-   - Source: Deploy from a branch
-   - Branch: gh-pages
-   - Folder: / (root)
-
-### Other Platforms
-
-The app can be deployed to any static hosting platform:
-- Netlify
-- Vercel
-- Firebase Hosting
-- AWS S3 + CloudFront
-
-## 📝 Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run deploy` - Deploy to GitHub Pages
-- `npm run lint` - Run ESLint
+### Environment Variables for Production
+```bash
+VITE_API_URL=https://your-api-domain.com
+VITE_ENABLE_MOCK_DATA=false
+VITE_DEBUG_MODE=false
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- React team for the amazing framework
-- Tailwind CSS for the utility-first CSS framework
-- Vite for the fast build tool
-- All contributors and supporters
-
-## 📞 Support
-
-If you have any questions or need help, please open an issue on GitHub.
+For support and questions:
+- Check the troubleshooting section in the documentation
+- Open an issue on GitHub
+- Contact the development team
 
 ---
 
-**Made with ❤️ using React and Tailwind CSS**
+**Built with ❤️ using React, Vite, and JSON Server**

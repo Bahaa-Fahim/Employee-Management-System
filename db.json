@@ -1,7 +1,7 @@
 {
   "employees": [
     {
-      "id": 1,
+      "id": "1",
       "firstName": "John",
       "lastName": "Smith",
       "email": "john.smith@company.com",
@@ -29,7 +29,7 @@
       }
     },
     {
-      "id": 2,
+      "id": "2",
       "firstName": "Sarah",
       "lastName": "Johnson",
       "email": "sarah.johnson@company.com",
@@ -57,7 +57,7 @@
       }
     },
     {
-      "id": 3,
+      "id": "3",
       "firstName": "Mike",
       "lastName": "Wilson",
       "email": "mike.wilson@company.com",
@@ -85,35 +85,7 @@
       }
     },
     {
-      "id": 4,
-      "firstName": "Emily",
-      "lastName": "Brown",
-      "email": "emily.brown@company.com",
-      "phone": "+1-555-0129",
-      "department": "Finance",
-      "position": "Finance Manager",
-      "salary": 88000,
-      "hireDate": "2021-01-15",
-      "status": "active",
-      "manager": "David Lee",
-      "emergencyContact": {
-        "name": "Robert Brown",
-        "relationship": "Spouse",
-        "phone": "+1-555-0130"
-      },
-      "performance": {
-        "rating": 4.6,
-        "lastReview": "2024-01-25",
-        "nextReview": "2024-07-25"
-      },
-      "attendance": {
-        "presentDays": 96,
-        "absentDays": 2,
-        "lateDays": 2
-      }
-    },
-    {
-      "id": 5,
+      "id": "5",
       "firstName": "David",
       "lastName": "Lee",
       "email": "david.lee@company.com",
@@ -143,7 +115,7 @@
   ],
   "departments": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Information Technology",
       "code": "IT",
       "manager": "Sarah Johnson",
@@ -154,7 +126,7 @@
       "color": "bg-gradient-to-br from-blue-500 to-indigo-600"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Human Resources",
       "code": "HR",
       "manager": "Jennifer Adams",
@@ -165,7 +137,7 @@
       "color": "bg-gradient-to-br from-green-500 to-emerald-600"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Marketing",
       "code": "MKT",
       "manager": "Mike Wilson",
@@ -176,7 +148,7 @@
       "color": "bg-gradient-to-br from-purple-500 to-pink-600"
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "Finance",
       "code": "FIN",
       "manager": "Emily Brown",
@@ -187,7 +159,7 @@
       "color": "bg-gradient-to-br from-yellow-500 to-orange-600"
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "Sales",
       "code": "SLS",
       "manager": "David Lee",
@@ -198,7 +170,7 @@
       "color": "bg-gradient-to-br from-red-500 to-rose-600"
     },
     {
-      "id": 6,
+      "id": "6",
       "name": "Operations",
       "code": "OPS",
       "manager": "Lisa Davis",
@@ -211,7 +183,7 @@
   ],
   "projects": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Website Redesign",
       "description": "Complete redesign of company website with modern UI/UX",
       "department": "IT",
@@ -221,11 +193,15 @@
       "status": "in-progress",
       "priority": "high",
       "budget": 50000,
-      "teamMembers": ["John Smith", "Alex Chen", "Maria Garcia"],
+      "teamMembers": [
+        "John Smith",
+        "Alex Chen",
+        "Maria Garcia"
+      ],
       "progress": 65
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Marketing Campaign Q1",
       "description": "Digital marketing campaign for Q1 product launch",
       "department": "Marketing",
@@ -235,11 +211,15 @@
       "status": "completed",
       "priority": "medium",
       "budget": 25000,
-      "teamMembers": ["Mike Wilson", "Jessica Kim", "Tom Anderson"],
+      "teamMembers": [
+        "Mike Wilson",
+        "Jessica Kim",
+        "Tom Anderson"
+      ],
       "progress": 100
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "HR System Implementation",
       "description": "Implementation of new HR management system",
       "department": "HR",
@@ -249,13 +229,17 @@
       "status": "in-progress",
       "priority": "high",
       "budget": 75000,
-      "teamMembers": ["Jennifer Adams", "Robert Taylor", "Lisa Chen"],
+      "teamMembers": [
+        "Jennifer Adams",
+        "Robert Taylor",
+        "Lisa Chen"
+      ],
       "progress": 30
     }
   ],
   "reports": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Employee Distribution Report",
       "type": "employee",
       "status": "completed",
@@ -265,7 +249,7 @@
       "downloads": 45
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Salary Analysis Q4 2023",
       "type": "financial",
       "status": "completed",
@@ -275,7 +259,7 @@
       "downloads": 32
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Performance Metrics Report",
       "type": "performance",
       "status": "pending",
@@ -285,7 +269,7 @@
       "downloads": 0
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "Department Budget Report",
       "type": "department",
       "status": "failed",
@@ -295,7 +279,7 @@
       "downloads": 18
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "Attendance Analysis Report",
       "type": "attendance",
       "status": "completed",
@@ -307,7 +291,7 @@
   ],
   "attendance": [
     {
-      "id": 1,
+      "id": "1",
       "employeeId": 1,
       "date": "2024-01-15",
       "checkIn": "09:00",
@@ -316,7 +300,7 @@
       "lateMinutes": 0
     },
     {
-      "id": 2,
+      "id": "2",
       "employeeId": 2,
       "date": "2024-01-15",
       "checkIn": "08:45",
@@ -325,7 +309,7 @@
       "lateMinutes": 0
     },
     {
-      "id": 3,
+      "id": "3",
       "employeeId": 3,
       "date": "2024-01-15",
       "checkIn": "09:15",
@@ -336,7 +320,7 @@
   ],
   "leaves": [
     {
-      "id": 1,
+      "id": "1",
       "employeeId": 1,
       "type": "vacation",
       "startDate": "2024-02-01",
@@ -346,7 +330,7 @@
       "approvedBy": "Sarah Johnson"
     },
     {
-      "id": 2,
+      "id": "2",
       "employeeId": 2,
       "type": "sick",
       "startDate": "2024-01-20",
@@ -358,24 +342,30 @@
   ],
   "performance": [
     {
-      "id": 1,
+      "id": "1",
       "employeeId": 1,
       "rating": 4.5,
       "reviewDate": "2024-01-15",
       "reviewer": "Sarah Johnson",
       "comments": "Excellent work on the website redesign project. Shows great technical skills and leadership.",
-      "goals": ["Complete advanced React certification", "Lead 2 more projects"],
+      "goals": [
+        "Complete advanced React certification",
+        "Lead 2 more projects"
+      ],
       "nextReview": "2024-07-15"
     },
     {
-      "id": 2,
+      "id": "2",
       "employeeId": 2,
       "rating": 4.8,
       "reviewDate": "2024-01-20",
       "reviewer": "Mike Wilson",
       "comments": "Outstanding performance as IT Manager. Team productivity has increased significantly.",
-      "goals": ["Implement new development processes", "Reduce system downtime by 20%"],
+      "goals": [
+        "Implement new development processes",
+        "Reduce system downtime by 20%"
+      ],
       "nextReview": "2024-07-20"
     }
   ]
-} 
+}

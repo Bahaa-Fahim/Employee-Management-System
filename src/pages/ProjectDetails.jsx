@@ -1,100 +1,381 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './Projects.css';
-
-// Mock data for demonstration
-const mockProjects = [
-  {
-    id: 1,
-    name: 'Wordpress Website',
-    status: 'Active',
-    createdBy: 'Jayesh Patel',
-    messages: 277,
-    commits: 175,
-    version: 'v2.5.2',
-    progress: 60,
-    lastUpdated: '22-08-2021 12:15:57',
-    created: '17-05-2020',
-    deadline: '22-09-2021',
-    team: [
-      { name: 'Anna', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
-      { name: 'Lila', avatar: 'https://randomuser.me/api/portraits/women/47.jpg' },
-      { name: 'Ella', avatar: 'https://randomuser.me/api/portraits/women/65.jpg' },
-      { name: 'John', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
-      { name: 'Mike', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' },
-      { name: 'Sara', avatar: 'https://randomuser.me/api/portraits/women/50.jpg' },
-      { name: 'Tom', avatar: 'https://randomuser.me/api/portraits/men/60.jpg' },
-    ],
-    description: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.\n\nIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FiArrowLeft, FiEdit, FiTrash2, FiUsers, FiCalendar, FiTrendingUp, FiTarget, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { projectsAPI, employeesAPI } from '../services/api';
+import Swal from 'sweetalert2';
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const project = mockProjects.find(p => String(p.id) === String(id));
+  const [project, setProject] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    loadProject();
+  }, [id]);
+
+  const loadProject = async () => {
+    try {
+      setLoading(true);
+      const response = await projectsAPI.getById(id);
+      setProject(response.data);
+      loadTeamMembers(response.data.teamMembers);
+    } catch (error) {
+      console.error('Failed to load project:', error);
+      Swal.fire('Error', 'Failed to load project details', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTeamMembers = async (memberIds) => {
+    if (!memberIds || memberIds.length === 0) return;
+    
+    try {
+      const members = [];
+      for (const memberId of memberIds) {
+        const response = await employeesAPI.getById(memberId);
+        members.push(response.data);
+      }
+      setTeamMembers(members);
+    } catch (error) {
+      console.error('Failed to load team members:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await projectsAPI.delete(id);
+        Swal.fire('Deleted!', 'Project has been deleted.', 'success');
+        navigate('/projects');
+      } catch (error) {
+        Swal.fire('Error', 'Failed to delete project', 'error');
+      }
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'on-hold': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const calculateProgress = () => {
+    if (!project) return 0;
+    if (project.status === 'completed') return 100;
+    if (project.status === 'cancelled') return 0;
+    return project.progress || 0;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
-      <div className="projects-container" style={{paddingTop: '2rem'}}>
-        <div className="project-details-card" style={{padding: '2rem', textAlign: 'center'}}>
-          <h2>Project Not Found</h2>
-          <button className="form-btn btn-primary" style={{marginTop: '1rem'}} onClick={() => navigate('/projects')}>Back to Projects</button>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Project Not Found</h2>
+          <Link to="/projects" className="text-blue-600 hover:text-blue-800">
+            Back to Projects
+          </Link>
         </div>
       </div>
     );
   }
 
-  const teamToShow = project.team.slice(0, 3);
-  const extraCount = project.team.length - 3;
-
   return (
-    <div className="projects-container" style={{background: '#f3f6fa', minHeight: '100vh', paddingTop: '2rem'}}>
-      <div style={{display: 'flex', gap: '2rem', alignItems: 'flex-start'}}>
-        {/* Main Card */}
-        <div style={{flex: 2}}>
-          <div style={{background: 'white', borderRadius: 16, boxShadow: '0 2px 12px rgba(102,126,234,0.08)', padding: '2.5rem 2rem', marginBottom: '2rem'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24}}>
-              <h2 style={{fontWeight: 700, color: '#ff9800', fontSize: 32, margin: 0}}>{project.name}</h2>
-              <button className="project-edit-link" style={{color: '#2196f3', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer'}} onClick={() => navigate(`/edit-project/${project.id}`)}>Edit project</button>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/projects')}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+              >
+                <FiArrowLeft className="w-5 h-5" />
+                <span>Back to Projects</span>
+              </button>
             </div>
-            <div style={{display: 'flex', gap: '2rem', flexWrap: 'wrap'}}>
-              <div style={{flex: 1, minWidth: 220}}>
-                <div style={{marginBottom: 12}}><b>Status:</b> <span style={{background: '#22c55e', color: 'white', borderRadius: 6, padding: '2px 12px', fontWeight: 600, fontSize: 15}}>{project.status}</span></div>
-                <div style={{marginBottom: 8}}><b>Created by:</b> <span>{project.createdBy}</span></div>
-                <div style={{marginBottom: 8}}><b>Messages:</b> <span>{project.messages}</span></div>
-                <div style={{marginBottom: 8}}><b>Commits:</b> <span>{project.commits}</span></div>
-                <div style={{marginBottom: 8}}><b>Version:</b> <span>{project.version}</span></div>
-                <div style={{marginBottom: 8}}><b>Project Status:</b>
-                  <div style={{marginTop: 4, marginBottom: 2, background: '#e5e7eb', borderRadius: 8, height: 8, width: '100%', position: 'relative'}}>
-                    <div style={{width: `${project.progress}%`, background: '#3b82f6', height: '100%', borderRadius: 8}}></div>
-                  </div>
-                  <span style={{fontWeight: 600, color: '#059669', fontSize: 15}}>{project.progress}%</span> Project completed.
-                </div>
+            <div className="flex space-x-3">
+              <Link
+                to={`/projects/edit/${id}`}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <FiEdit className="w-4 h-4" />
+                <span>Edit</span>
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                <FiTrash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-start space-x-6">
+            <div className="flex-shrink-0">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                {project.name?.charAt(0)}
               </div>
-              <div style={{flex: 1, minWidth: 220}}>
-                <div style={{marginBottom: 8}}><b>Last Updated:</b> <span>{project.lastUpdated}</span></div>
-                <div style={{marginBottom: 8}}><b>Created:</b> <span>{project.created}</span></div>
-                <div style={{marginBottom: 8}}><b>Deadline:</b> <span>{project.deadline}</span></div>
-                <div style={{marginBottom: 8, display: 'flex', alignItems: 'center'}}><b>Team:</b>
-                  <div style={{display: 'flex', alignItems: 'center', marginLeft: 8}}>
-                    {teamToShow.map((member, idx) => (
-                      <img key={member.name} src={member.avatar} alt={member.name} title={member.name} style={{width: 32, height: 32, borderRadius: '50%', border: '2px solid #fff', marginLeft: idx === 0 ? 0 : -12, boxShadow: '0 2px 8px rgba(0,0,0,0.10)'}} />
-                    ))}
-                    {extraCount > 0 && (
-                      <span style={{marginLeft: 4, background: '#a5b4fc', color: 'white', borderRadius: 12, padding: '2px 10px', fontWeight: 600, fontSize: 15}}>+{extraCount}</span>
-                    )}
-                  </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center space-x-4 mb-4">
+                <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(project.status)}`}>
+                  {project.status}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(project.priority)}`}>
+                  {project.priority}
+                </span>
+              </div>
+              <p className="text-gray-600 mb-4">{project.description}</p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="flex items-center space-x-2">
+                  <FiUsers className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">{project.department}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <FiCalendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">
+                    {new Date(project.startDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <FiTarget className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">
+                    {new Date(project.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <FiTrendingUp className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">{project.manager}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* Description Card */}
-        <div style={{flex: 1}}>
-          <div style={{background: 'white', borderRadius: 16, boxShadow: '0 2px 12px rgba(102,126,234,0.08)', padding: '2.5rem 2rem'}}>
-            <h2 style={{fontWeight: 700, color: '#374151', fontSize: 22, marginBottom: 16}}>Project description</h2>
-            <div style={{color: '#374151', fontSize: 16, lineHeight: 1.7, whiteSpace: 'pre-line'}}>{project.description}</div>
+
+        {/* Progress Bar */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-900">Project Progress</h3>
+            <span className="text-sm font-medium text-gray-600">{calculateProgress()}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${calculateProgress()}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6">
+              {[
+                { id: 'overview', label: 'Overview', icon: FiTarget },
+                { id: 'team', label: 'Team', icon: FiUsers },
+                { id: 'timeline', label: 'Timeline', icon: FiCalendar },
+                { id: 'tasks', label: 'Tasks', icon: FiCheckCircle }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <div className="p-6">
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiUsers className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Team Size</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {teamMembers.length} members
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiCalendar className="w-6 h-6 text-green-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Duration</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))} days
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiTrendingUp className="w-6 h-6 text-purple-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Budget</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        ${project.budget?.toLocaleString() || 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiCheckCircle className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Status</p>
+                      <p className="text-lg font-semibold text-gray-900 capitalize">{project.status}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiClock className="w-6 h-6 text-red-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Priority</p>
+                      <p className="text-lg font-semibold text-gray-900 capitalize">{project.priority}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FiTarget className="w-6 h-6 text-indigo-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Progress</p>
+                      <p className="text-lg font-semibold text-gray-900">{calculateProgress()}%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Team Tab */}
+            {activeTab === 'team' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900">Project Team</h3>
+                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Add Member
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium">
+                            {member.firstName?.charAt(0)}{member.lastName?.charAt(0)}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {member.firstName} {member.lastName}
+                          </h4>
+                          <p className="text-sm text-gray-500">{member.position}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Timeline Tab */}
+            {activeTab === 'timeline' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Timeline</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Project Started</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(project.startDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">In Progress</p>
+                        <p className="text-sm text-gray-500">Currently active</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Project Deadline</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(project.endDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tasks Tab */}
+            {activeTab === 'tasks' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Tasks</h3>
+                  <p className="text-gray-600">Task management will be implemented here.</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

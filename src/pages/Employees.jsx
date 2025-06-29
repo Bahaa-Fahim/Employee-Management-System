@@ -482,7 +482,7 @@ const Employees = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-4xl mx-auto">
       {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Employees Management</h1>
@@ -680,12 +680,18 @@ const Employees = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleEditEmployee(employee)}
+                        <Link
+                          to={`/employees/${employee.id}`}
                           className="text-blue-600 hover:text-blue-900"
-                      >
+                        >
+                          <FiEye className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleEditEmployee(employee)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
                           <FiEdit3 className="w-4 h-4" />
-                      </button>
+                        </button>
                         <button
                           onClick={() => handleResetPassword(employee)}
                           className="text-yellow-600 hover:text-yellow-900"
@@ -693,29 +699,29 @@ const Employees = () => {
                           <FiShield className="w-4 h-4" />
                         </button>
                         {employee.role === 'employee' && (
-                        <button
+                          <button
                             onClick={() => handlePromoteEmployee(employee)}
                             className="text-green-600 hover:text-green-900"
-                        >
+                          >
                             <FiManager className="w-4 h-4" />
-                        </button>
-                      )}
-                      {employee.role === 'manager' && (
-                        <button
-                          onClick={() => handleDemoteManager(employee)}
+                          </button>
+                        )}
+                        {employee.role === 'manager' && (
+                          <button
+                            onClick={() => handleDemoteManager(employee)}
                             className="text-orange-600 hover:text-orange-900"
-                        >
+                          >
                             <FiUsers className="w-4 h-4" />
-                    </button>
-                      )}
-                    <button
-                      onClick={() => handleDeleteEmployee(employee.id)}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteEmployee(employee.id)}
                           className="text-red-600 hover:text-red-900"
-                    >
+                        >
                           <FiTrash2 className="w-4 h-4" />
-                    </button>
-                    </div>
-                  </td>
+                        </button>
+                      </div>
+                    </td>
                 </tr>
               ))}
             </tbody>
@@ -957,3 +963,13 @@ const Employees = () => {
 };
 
 export default Employees; 
+
+
+
+
+
+
+
+<p> 
+  <mark>html</mark> is <i>fun</i> to <b>learn</b>
+  </p>

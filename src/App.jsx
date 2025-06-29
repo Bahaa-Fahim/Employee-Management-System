@@ -20,6 +20,8 @@ import Reports from './pages/Reports';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import EmployeeProfile from './pages/EmployeeProfile';
+import EmployeeDetails from './pages/EmployeeDetails';
+import DepartmentDetails from './pages/DepartmentDetails';
 import ProjectDetails from './pages/ProjectDetails';
 import ManagerReports from './pages/ManagerReports';
 
@@ -92,7 +94,23 @@ function App() {
             <Route path="/employees/:id" element={
               <ProtectedRoute requiredRoles={['admin', 'manager']}>
                 <Layout>
-                  <EmployeeProfile />
+                  <EmployeeDetails />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/departments" element={
+              <ProtectedRoute requiredRole="admin">
+                <Layout>
+                  <Departments />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/departments/:id" element={
+              <ProtectedRoute requiredRole="admin">
+                <Layout>
+                  <DepartmentDetails />
                 </Layout>
               </ProtectedRoute>
             } />
@@ -125,14 +143,6 @@ function App() {
               <ProtectedRoute requiredRoles={['admin', 'manager']}>
                 <Layout>
                   <EditProject />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/departments" element={
-              <ProtectedRoute requiredRole="admin">
-                <Layout>
-                  <Departments />
                 </Layout>
               </ProtectedRoute>
             } />
